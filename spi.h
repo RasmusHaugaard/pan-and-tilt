@@ -59,6 +59,12 @@ void spi_write(INT8U addr, INT8U data);
 *   Output   : -
 *   Function : Write data to addr.
 ******************************************************************************/
+void spi_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+/*****************************************************************************
+*   Input    : -
+*   Output   : -
+*   Function : Send and receive data to/from FPGA.
+******************************************************************************/
 /****************************** End Of Module *******************************/
 
 

@@ -22,9 +22,12 @@
 #include <stdlib.h>
 #include "tm4c123gh6pm.h"
 #include "emp_type.h"
+#include "spi.h"
+#include "tmodel.h"
 /*****************************    Defines    *******************************/
 /*****************************   Constants   *******************************/
 /*****************************   Variables   *******************************/
+INT8U spi_data;
 /*****************************   Functions   *******************************/
 
 //************************************************************************
@@ -72,4 +75,23 @@ void spi_write(INT8U addr, INT8U data)
     send_byte(data);
     dummy = recieve_byte();
     dummy = recieve_byte();
+}
+
+void spi_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
+{
+
+    if( SSI2_SR_R&(SSI_SR_RNE) )
+    {
+      put_queue( Q_SPI_RX, SSI2_DR_R, WAIT_FOREVER );
+    }
+
+    if( SSI2_SR_R&(SSI_SR_TNF) )
+    {
+      if( get_queue( Q_SPI_TX, &spi_data, WAIT_FOREVER ))
+      {
+          SSI2_SR_R = spi_data;
+      }
+    }
+
+
 }

@@ -21,6 +21,8 @@
 #include <stdint.h>
 #include "tm4c123gh6pm.h"
 #include "emp_type.h"
+#include "uart.h"
+#include "tmodel.h"
 /*****************************    Defines    *******************************/
 
 /*****************************   Constants   *******************************/
@@ -30,12 +32,46 @@
 
 /*****************************   Functions   *******************************/
 
+void uart_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
+/*****************************************************************************
+*   Input    :
+*   Output   :
+*   Function :
+******************************************************************************/
+{
+  if( !uart0_rx_empty() )
+    put_queue( Q_UART_RX, uart0_getc(), WAIT_FOREVER );
+  else
+    wait( 1 );
+}
+
+void uart_tx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
+/*****************************************************************************
+*   Input    :
+*   Output   :
+*   Function :
+******************************************************************************/
+{
+  INT8U uart_data;
+
+  if( get_queue( Q_UART_TX, &uart_data, WAIT_FOREVER ))
+    UART0_DR_R = uart_data;
+}
+
 BOOLEAN uart0_rx_rdy()
 /*****************************************************************************
 *   Function : See module specification (.h-file).
 *****************************************************************************/
 {
   return( UART0_FR_R & UART_FR_RXFF );
+}
+
+BOOLEAN uart0_rx_empty()
+/*****************************************************************************
+*   Function : See module specification (.h-file).
+*****************************************************************************/
+{
+  return( UART0_FR_R & UART_FR_RXFE );
 }
 
 INT8U uart0_getc()
@@ -52,6 +88,14 @@ BOOLEAN uart0_tx_rdy()
 *****************************************************************************/
 {
   return( UART0_FR_R & UART_FR_TXFE );
+}
+
+BOOLEAN uart0_tx_full()
+/*****************************************************************************
+*   Function : See module specification (.h-file).
+*****************************************************************************/
+{
+  return( UART0_FR_R & UART_FR_TXFF );
 }
 
 void uart0_putc( INT8U ch )
@@ -184,7 +228,7 @@ extern void uart0_init( INT32U baud_rate, INT8U databits, INT8U stopbits, INT8U 
   UART0_LCRH_R += lcrh_stopbits( stopbits );
   UART0_LCRH_R += lcrh_parity( parity );
 
-  uart0_fifos_disable();
+  uart0_fifos_enable();
 
   UART0_CTL_R  |= (UART_CTL_UARTEN | UART_CTL_TXE );  // Enable UART
 }
