@@ -30,8 +30,6 @@
 #define HIGH(x)  ((x) >> 8)
 #define LOW(x)  ((x) & 0xFF)
 
-#define TIM_10_MSEC   10
-
 #define SET_PWM_PAN     0x10
 #define SET_PWM_TILT    0x11
 #define ENC_ON          0x01
@@ -56,8 +54,7 @@ enum matlab_states
 INT16U counter_100_msec = TIM_100_MSEC;
 INT8U uart_cmd;
 INT8U uart_data;
-INT8U timer = TIM_10_MSEC;
-BOOLEAN encoder_state = 0;
+BOOLEAN encoder_on = 0;
 volatile INT16S encoder_pan_data = 0;
 volatile INT16S encoder_tilt_data = 0;
 /*****************************   Functions   *******************************/
@@ -77,12 +74,12 @@ void matlab_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
                 set_state( SPI_SET_PWM_PAN  );
                 break;
             case ENC_ON:
-                encoder_state = TRUE;
+                encoder_on = TRUE;
                 encoder_pan_data = 0;
                 encoder_tilt_data = 0;
                 break;
             case ENC_OFF:
-                encoder_state = FALSE;
+                encoder_on = FALSE;
                 break;
             case PING_REQ:
                 put_queue( Q_UART_TX, PING_RESP, WAIT_FOREVER );
@@ -115,7 +112,7 @@ void matlab_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
         break;
     }
 
-    if(encoder_state)
+    if(encoder_on)
     {
         if(!--counter_100_msec)
         {

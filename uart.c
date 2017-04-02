@@ -39,10 +39,8 @@ void uart_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 *   Function :
 ******************************************************************************/
 {
-  if( !uart0_rx_empty() )
+  while( !uart0_rx_empty() )
     put_queue( Q_UART_RX, uart0_getc(), WAIT_FOREVER );
-  else
-    wait( 1 );
 }
 
 void uart_tx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
@@ -54,7 +52,7 @@ void uart_tx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 {
   INT8U uart_data;
 
-  if( get_queue( Q_UART_TX, &uart_data, WAIT_FOREVER ))
+  while( get_queue( Q_UART_TX, &uart_data, WAIT_FOREVER ))
     UART0_DR_R = uart_data;
 }
 
