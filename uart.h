@@ -67,7 +67,7 @@ void uart0_putc( INT8U );
 *   Function : Put character to uart0 TX
 ******************************************************************************/
 
-void uart0_init( INT32U, INT8U, INT8U, INT8U );
+void init_uart0( INT32U, INT8U, INT8U, INT8U );
 /*****************************************************************************
 *   Input    : Baud_rate
 *              Databits: 5, 6, 7 or 8(default)

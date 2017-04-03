@@ -196,7 +196,7 @@ void uart0_fifos_disable()
 
 
 
-extern void uart0_init( INT32U baud_rate, INT8U databits, INT8U stopbits, INT8U parity )
+void init_uart0( INT32U baud_rate, INT8U databits, INT8U stopbits, INT8U parity )
 /*****************************************************************************
 *   Function : See module specification (.h-file).
 *****************************************************************************/
