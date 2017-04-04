@@ -1,0 +1,91 @@
+#User Constrain File for BASYS and NEXYS kits
+#Use the comment / uncomment commands to select
+# Revision 12-7-2009
+############################# N E X Y S - kit ########
+#NET "JA<1>"  	LOC = "L15"  ;  #PMOD 1
+#NET "JA<2>"	LOC = "K12"  ; 
+#NET "JA<3>"  	LOC = "L17"  ;
+NET "A"  	LOC = "L17"  ;
+#NET "JA<4>"  	LOC = "M15"  ;
+NET "B"  	LOC = "M15"  ;
+##NET "JA<5>"  LOC = "K13"  ;  #PMOD 1
+##NET "JA<6>"	LOC = "L16"  ; 
+##NET "JA<7>"  LOC = "M14"  ;
+##NET "JA<8>"  LOC = "M16"  ;
+##--------------------------------------
+#NET "JB<1>"  	LOC = "M13"  ;  #PMOD 2
+#NET "JB<2>"	LOC = "R18"  ; 
+#NET "JB<3>"  	LOC = "R15"  ;
+#NET "JB<4>"  	LOC = "T17"  ;
+#NET "spi_ss"	LOC = "T18";
+#NET "spi_data_out"	LOC = "T17";
+#NET "spi_clk"	LOC = "R15";
+#NET "spi_data_in"	LOC = "U18";
+##--------------------------------------
+#NET "JC<1>"  	LOC = "G15"  ;  #PMOD 3
+#NET "JC<2>"	LOC = "J16"  ; 
+#NET "JC<3>"  	LOC = "G13"  ;
+#NET "JC<4>"  	LOC = "H16"  ;
+##--------------------------------------
+#NET "JD<1>"  	LOC = "J13"  ;  #PMOD 4
+#NET "JD<2>"	LOC = "M18"  ; 
+#NET "JD<3>"  	LOC = "N18"  ;
+NET "o1_tilt"  	LOC = "N18"  ;
+#NET "JD<4>"  	LOC = "P18"  ;
+NET "o2_tilt"  	LOC = "P18"  ;
+
+
+
+##-------------------- 7 Segment display 
+#NET "An<0>"  	LOC = "F17"  ;
+#NET "An<1>"  	LOC = "H17"  ;
+#NET "An<2>"  	LOC = "C18"  ;
+#NET "An<3>"  	LOC = "F15"  ;
+#NET "Segm<1>"  LOC = "L18"  ;  #a - Segment
+#NET "Segm<2>"  LOC = "F18"  ;  #b
+#NET "Segm<3>"  LOC = "D17"  ;  #c
+#NET "Segm<4>"  LOC = "D16"  ;  #d
+#NET "Segm<5>"  LOC = "G14"  ;  #e
+#NET "Segm<6>"  LOC = "J17"  ;  #f
+#NET "Segm<7>"  LOC = "H14"  ;  #g
+#NET "Segm<8>"  LOC = "C17"  ;  #dp
+#
+#NET "Btn<0>"  	LOC = "B18"  ;
+#NET "Btn<1>"  	LOC = "D18"  ;
+#NET "Btn<2>"  	LOC = "E18"  ;
+#NET "Btn<3>"  	LOC = "H13"  ;
+#
+NET "led<0>"  	LOC = "J14"  ; 
+NET "led<1>"  	LOC = "J15"  ; 
+NET "led<2>"  	LOC = "K15"  ; 
+NET "led<3>"  	LOC = "K14"  ; 
+NET "led<4>"  	LOC = "E17"  ; 
+NET "led<5>"  	LOC = "P15"  ; 
+NET "led<6>"  	LOC = "F4"  ; 
+NET "led<7>"  	LOC = "R4"  ; 
+#
+NET "Sw<0>"  	LOC = "G18"  ;
+NET "Sw<1>"  	LOC = "H18"  ;
+NET "Sw<2>"  	LOC = "K18"  ;
+NET "Sw<3>"  	LOC = "K17"  ;
+NET "Sw<4>"  	LOC = "L14"  ;
+NET "Sw<5>"  	LOC = "L13"  ;
+NET "Sw<6>"  	LOC = "N17"  ;
+NET "Sw<7>"  	LOC = "R17"  ;
+#
+#NET "VGA<9>"  	LOC = "U3"  ; #VS          
+#NET "VGA<8>"  	LOC = "T4"  ; #HS       
+#NET "VGA<7>"  	LOC = "P6"  ; #Green 2 
+#NET "VGA<6>"  	LOC = "P8"  ; #Green 1
+#NET "VGA<5>"  	LOC = "N8"  ; #Green 0
+#NET "VGA<4>"  	LOC = "U4"  ; #Blue 1
+#NET "VGA<3>"  	LOC = "U5"  ; #Blue 0
+#NET "VGA<2>"  	LOC = "R8"  ; #Red 2  
+#NET "VGA<1>"  	LOC = "T8"  ; #Red 1   
+#NET "VGA<0>"  	LOC = "R9"  ; #Red 0   
+
+#NET "PS2_CLK" 	LOC = "R12";
+#NET "PS2_DATA"	LOC = "P11";
+
+NET "fpgaclk"  		LOC = "B8"  ; # Clk 50 MHz
+
