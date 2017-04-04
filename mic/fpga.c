@@ -25,7 +25,7 @@
 #include "tmodel.h"
 #include "fpga.h"
 #include "swtimers.h"
-#include "rtcs/rtcs.h"
+#include "rtcs.h"
 /*****************************    Defines    *******************************/
 
 enum encoder_states

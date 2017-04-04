@@ -26,7 +26,7 @@
 #include "glob_def.h"
 #include "swtimers.h"
 #include "tmodel.h"
-#include "rtcs/rtcs.h"
+#include "rtcs.h"
 /*****************************    Defines    *******************************/
 #define HIGH(x)  ((x) >> 8)
 #define LOW(x)  ((x) & 0xFF)

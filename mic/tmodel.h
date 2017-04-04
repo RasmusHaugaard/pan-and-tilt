@@ -20,7 +20,7 @@
 #ifndef _TMODEL_H_
 #define _TMODEL_H_
 
-#include "rtcs/rtcs.h"
+#include "rtcs.h"
 
 // Tasks.
 // ------

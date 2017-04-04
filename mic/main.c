@@ -23,7 +23,7 @@
 #include "emp_type.h"
 #include "gpio.h"
 #include "tmodel.h"
-#include "rtcs/rtcs.h"
+#include "rtcs.h"
 #include "uart.h"
 #include "spi.h"
 #include "fpga.h"

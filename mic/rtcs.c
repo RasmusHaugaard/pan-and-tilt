@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include "tm4c123gh6pm.h"
 #include "emp_type.h"
-#include "../swtimers.h"
+#include "swtimers.h"
 #include "glob_def.h"
 #include "rtcs.h"
 #include "systick.h"
