@@ -2,18 +2,18 @@
 * University of Southern Denmark
 * Embedded Programming (EMP)
 *
-* MODULENAME.: main.c
+* MODULENAME.: gpio.c
 *
-* PROJECT....: Pan and tilt
+* PROJECT....: EMP
 *
-* DESCRIPTION: Pan and tilt, test.
+* DESCRIPTION: See module specification file (.h-file).
 *
 * Change Log:
 *****************************************************************************
 * Date    Id    Change
 * YYMMDD
 * --------------------
-* 170327  MBJ   Module created.
+* 170313  MBJ   Module created.
 *
 *****************************************************************************/
 
@@ -22,13 +22,6 @@
 #include "tm4c123gh6pm.h"
 #include "emp_type.h"
 #include "gpio.h"
-#include "tmodel.h"
-#include "rtcs/rtcs.h"
-#include "uart.h"
-#include "spi.h"
-#include "fpga.h"
-#include "matlab.h"
-
 /*****************************    Defines    *******************************/
 
 /*****************************   Constants   *******************************/
@@ -37,31 +30,25 @@
 
 /*****************************   Functions   *******************************/
 
-int main(void)
+void init_gpio(void)
+/*****************************************************************************
+*   Input    :
+*   Output   :
+*   Function : The super loop.
+******************************************************************************/
 {
-  init_gpio();
-  init_uart0( 115200, 8, 1, 'n' );
-  init_spi();
-  init_rtcs();
+    SYSCTL_RCGC2_R = SYSCTL_RCGC2_GPIOA | SYSCTL_RCGC2_GPIOB | SYSCTL_RCGC2_GPIOC | SYSCTL_RCGC2_GPIOD | SYSCTL_RCGC2_GPIOF;
+    SYSCTL_RCGC1_R |= 0x00000001;
+    // Enable the GPIO pin for the LED (PF3).  Set the direction as output, and
+    // enable the GPIO pin for digital function.
+    GPIO_PORTC_DIR_R = 0xF0;
+    GPIO_PORTC_DEN_R = 0xF0;
 
-  open_queue( Q_UART_TX );
-  open_queue( Q_UART_RX );
-  open_queue( Q_SPI_TX );
-  open_queue( Q_SPI_RX );
+    GPIO_PORTD_DIR_R = 0x4C;
+    GPIO_PORTD_DEN_R = 0x4C;
 
-  preset_sem( SEM_SPI_AVAILABLE, 1 );
-
-  start_task( TASK_UART_TX, uart_tx_task );
-  start_task( TASK_UART_RX, uart_rx_task );
-//start_task( TASK_UI, ui_task );
-  start_task( TASK_MATLAB, matlab_task);
-  start_task( TASK_SPI, spi_task );
-  start_task( TASK_ENCODER, encoder_task );
-  start_task( TASK_MATLAB_ENCODER, matlab_encoder_task );
-
-  schedule();
-
-  return(0);
+    GPIO_PORTF_DIR_R = 0x0E;
+    GPIO_PORTF_DEN_R = 0x1F;
 }
 
 /****************************** End Of Module *******************************/
