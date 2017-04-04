@@ -24,6 +24,8 @@
 #include "emp_type.h"
 #include "tmodel.h"
 #include "fpga.h"
+#include "swtimers.h"
+#include "rtcs/rtcs.h"
 /*****************************    Defines    *******************************/
 
 enum encoder_states
@@ -50,10 +52,11 @@ void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
     switch (my_state)
     {
     case ENC_IDLE:
-        if(wait_sem(SEM_SPI_AVAILABLE, WAIT_FOREVER))
+        if(event == EVENT_SIGNAL || wait_sem(SEM_SPI_AVAILABLE, WAIT_FOREVER))
         {
-            put_queue( Q_SPI_TX, FPGA_encoder_pan_reg, WAIT_FOREVER );
-            put_queue( Q_SPI_TX, FPGA_encoder_tilt_reg, WAIT_FOREVER );
+            put_queue( Q_SPI_TX, (1<<7)|FPGA_encoder_pan_reg, WAIT_FOREVER );
+            put_queue( Q_SPI_TX, (1<<7)|FPGA_encoder_tilt_reg, WAIT_FOREVER );
+            put_queue( Q_SPI_TX, 0, WAIT_FOREVER );
             set_state( ENC_DUMMY );
         }
         break;
@@ -74,7 +77,8 @@ void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
         if( get_queue( Q_SPI_RX, &uart_data, WAIT_FOREVER ))
         {
             encoder_tilt_data += (INT8S)uart_data;
-            signal (SEM_SPI_AVAILABLE);
+            signal ( SEM_SPI_AVAILABLE );
+            wait ( TIM_1_SEC );
             set_state( ENC_IDLE );
         }
         break;

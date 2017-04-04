@@ -26,9 +26,11 @@
 #include "glob_def.h"
 #include "swtimers.h"
 #include "tmodel.h"
+#include "rtcs/rtcs.h"
 /*****************************    Defines    *******************************/
 #define HIGH(x)  ((x) >> 8)
 #define LOW(x)  ((x) & 0xFF)
+
 
 #define SET_PWM_PAN     0x10
 #define SET_PWM_TILT    0x11
@@ -38,6 +40,15 @@
 #define ENC_TILT_RESP   0x21
 #define PING_REQ        0xF0
 #define PING_RESP       0xF1
+/*
+#define SET_PWM_PAN     'A'
+#define SET_PWM_TILT    'B'
+#define ENC_ON          'C'
+#define ENC_OFF         'D'
+#define ENC_PAN_RESP    'E'
+#define ENC_TILT_RESP   'F'
+#define PING_REQ        'G'
+#define PING_RESP       'H'*/
 
 #define FPGA_PWM_pan_reg        0x01
 #define FPGA_PWM_tilt_reg       0x02
@@ -45,15 +56,16 @@
 enum matlab_states
 {
   FIRST_BYTE,
-  SPI_SET_PWM_PAN,
-  SPI_SET_PWM_TILT,
+  SET_PWM,
+  WAIT_FOR_PWM,
+  WAIT_FOR_DUMMY,
 };
 
 /*****************************   Constants   *******************************/
 /*****************************   Variables   *******************************/
-INT16U counter_100_msec = TIM_100_MSEC;
 INT8U uart_cmd;
 INT8U uart_data;
+INT8U dummy_cnt = 0;
 BOOLEAN encoder_on = 0;
 volatile INT16S encoder_pan_data = 0;
 volatile INT16S encoder_tilt_data = 0;
@@ -63,15 +75,15 @@ void matlab_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
     switch (my_state)
     {
     case FIRST_BYTE:
-        if( get_queue( Q_UART_RX, &uart_data, WAIT_FOREVER ))
+        if( get_queue( Q_UART_RX, &uart_cmd, WAIT_FOREVER ))
         {
-            switch (uart_data)
+            switch (uart_cmd)
             {
             case SET_PWM_PAN:
-                set_state( SPI_SET_PWM_PAN );
+                set_state( SET_PWM );
                 break;
             case SET_PWM_TILT:
-                set_state( SPI_SET_PWM_PAN  );
+                set_state( SET_PWM  );
                 break;
             case ENC_ON:
                 encoder_on = TRUE;
@@ -89,40 +101,51 @@ void matlab_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
             }
         }
         break;
-    case SPI_SET_PWM_PAN:
-        if(wait_sem(SEM_SPI_AVAILABLE, WAIT_FOREVER))
+    case SET_PWM:
+        if(event == EVENT_SIGNAL || wait_sem(SEM_SPI_AVAILABLE, WAIT_FOREVER))
         {
-            put_queue( Q_SPI_TX, FPGA_PWM_pan_reg, WAIT_FOREVER );
+            set_state( WAIT_FOR_PWM );
+        }
+        break;
+    case WAIT_FOR_PWM:
+        if( get_queue( Q_UART_RX, &uart_data, WAIT_FOREVER ))
+        {
+            if (uart_cmd == SET_PWM_PAN)
+                put_queue( Q_SPI_TX, FPGA_PWM_pan_reg, WAIT_FOREVER );
+            else
+                put_queue( Q_SPI_TX, FPGA_PWM_tilt_reg, WAIT_FOREVER );
             put_queue( Q_SPI_TX, uart_data, WAIT_FOREVER );
+            set_state( WAIT_FOR_DUMMY );
+        }
+
+    case WAIT_FOR_DUMMY:
+        while( get_queue( Q_SPI_RX, &uart_data, WAIT_FOREVER ))
+        {
+            dummy_cnt++;
+        }
+        if (dummy_cnt >= 2)
+        {
+            dummy_cnt = 0;
             signal (SEM_SPI_AVAILABLE);
             set_state( FIRST_BYTE );
         }
         break;
-    case SPI_SET_PWM_TILT:
-        if(wait_sem(SEM_SPI_AVAILABLE, WAIT_FOREVER))
-        {
-            put_queue( Q_SPI_TX, FPGA_PWM_tilt_reg, WAIT_FOREVER );
-            put_queue( Q_SPI_TX, uart_data, WAIT_FOREVER );
-            signal (SEM_SPI_AVAILABLE);
-            set_state( FIRST_BYTE );
-        }
-        break;
+
     default:
         set_state( FIRST_BYTE );
         break;
     }
-
+}
+void matlab_encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
+{
     if(encoder_on)
     {
-        if(!--counter_100_msec)
-        {
-            counter_100_msec = TIM_100_MSEC;
-            put_queue( Q_UART_TX, ENC_PAN_RESP, WAIT_FOREVER );
-            put_queue( Q_UART_TX, LOW(encoder_pan_data), WAIT_FOREVER );
-            put_queue( Q_UART_TX, HIGH(encoder_pan_data), WAIT_FOREVER );
-            put_queue( Q_UART_TX, ENC_TILT_RESP, WAIT_FOREVER );
-            put_queue( Q_UART_TX, LOW(encoder_tilt_data), WAIT_FOREVER );
-            put_queue( Q_UART_TX, HIGH(encoder_tilt_data), WAIT_FOREVER );
-        }
+        put_queue( Q_UART_TX, ENC_PAN_RESP, WAIT_FOREVER );
+        put_queue( Q_UART_TX, LOW(encoder_pan_data), WAIT_FOREVER );
+        put_queue( Q_UART_TX, HIGH(encoder_pan_data), WAIT_FOREVER );
+        put_queue( Q_UART_TX, ENC_TILT_RESP, WAIT_FOREVER );
+        put_queue( Q_UART_TX, LOW(encoder_tilt_data), WAIT_FOREVER );
+        put_queue( Q_UART_TX, HIGH(encoder_tilt_data), WAIT_FOREVER );
+        wait(TIM_100_MSEC);
     }
 }

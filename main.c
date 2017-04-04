@@ -40,7 +40,7 @@
 int main(void)
 {
   init_gpio();
-  init_uart0( 9600, 8, 1, 'n' );
+  init_uart0( 115200, 8, 1, 'n' );
   init_spi();
   init_rtcs();
 
@@ -57,6 +57,7 @@ int main(void)
   start_task( TASK_MATLAB, matlab_task);
   start_task( TASK_SPI, spi_task );
   start_task( TASK_ENCODER, encoder_task );
+  start_task( TASK_MATLAB_ENCODER, matlab_encoder_task );
 
   schedule();
 

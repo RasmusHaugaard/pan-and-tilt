@@ -47,7 +47,7 @@ void init_spi(void){
     SSI2_CR0_R=0x7;        //freescale mode, 8 bit data, steady clock low
     SSI2_CR1_R|=(1<<1);    //enabling SSI
 }
-
+/*
 void send_byte(INT8U data){
         SSI2_DR_R=data; //putting the byte to send from SSI
     while((SSI2_SR_R&(1<<0))==0); //waiting for transmission to be done
@@ -76,7 +76,7 @@ void spi_write(INT8U addr, INT8U data)
     dummy = recieve_byte();
     dummy = recieve_byte();
 }
-
+*/
 void spi_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 {
 
@@ -88,7 +88,7 @@ void spi_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 
     while( SSI2_SR_R&(SSI_SR_TNF) && get_queue( Q_SPI_TX, &spi_data, WAIT_FOREVER ))
     {
-        SSI2_SR_R = spi_data;
+        SSI2_DR_R = spi_data;
     }
 
 

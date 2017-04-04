@@ -306,7 +306,10 @@ void schedule()
       }
 
       if( pot[current_task].condition == TASK_READY )
-        pot[current_task].tf(current_task, pot[current_task].state, 0, 0);
+      {
+          pot[current_task].tf(current_task, pot[current_task].state, pot[current_task].event, 0);
+          pot[current_task].event = EVENT_NONE;
+      }
    	  current_task++;
 	} while ( pot[current_task].condition != TASK_IDLE );
   }
