@@ -69,14 +69,14 @@ void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
     case ENC_PAN:
         if( get_queue( Q_SPI_RX, &uart_data, WAIT_FOREVER ))
         {
-            encoder_pan_data = (INT8S)uart_data;
+            encoder_pan_data += (INT8S)uart_data;
             set_state( ENC_TILT );
         }
         break;
     case ENC_TILT:
         if( get_queue( Q_SPI_RX, &uart_data, WAIT_FOREVER ))
         {
-            encoder_tilt_data = (INT8S)uart_data;
+            encoder_tilt_data += (INT8S)uart_data;
             signal ( SEM_SPI_AVAILABLE );
             set_state( ENC_IDLE );
         }
