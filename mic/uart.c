@@ -52,7 +52,7 @@ void uart_tx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 {
   INT8U uart_data;
 
-  while( get_queue( Q_UART_TX, &uart_data, WAIT_FOREVER ))
+  while( !uart0_tx_full() && get_queue( Q_UART_TX, &uart_data, WAIT_FOREVER ))
     UART0_DR_R = uart_data;
 }
 

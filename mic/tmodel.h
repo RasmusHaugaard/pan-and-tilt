@@ -26,11 +26,12 @@
 // ------
 #define TASK_UART_RX        USER_TASK
 #define TASK_UART_TX        USER_TASK+1
-#define TASK_SPI            USER_TASK+2
-#define TASK_MATLAB         USER_TASK+3
-#define TASK_ENCODER        USER_TASK+4
-#define TASK_MATLAB_ENCODER USER_TASK+5
-#define TASK_UI             USER_TASK+5
+#define TASK_SPI_TX         USER_TASK+2
+#define TASK_SPI_RX         USER_TASK+3
+#define TASK_MATLAB         USER_TASK+4
+#define TASK_ENCODER        USER_TASK+5
+#define TASK_MATLAB_ENCODER USER_TASK+6
+#define TASK_UI             USER_TASK+7
 
 
 // Interrupt Service Routines.

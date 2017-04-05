@@ -55,7 +55,8 @@ int main(void)
   start_task( TASK_UART_RX, uart_rx_task );
 //start_task( TASK_UI, ui_task );
   start_task( TASK_MATLAB, matlab_task);
-  start_task( TASK_SPI, spi_task );
+  start_task( TASK_SPI_TX, spi_tx_task );
+  start_task( TASK_SPI_RX, spi_rx_task );
   start_task( TASK_ENCODER, encoder_task );
   start_task( TASK_MATLAB_ENCODER, matlab_encoder_task );
 
