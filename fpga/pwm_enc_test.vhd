@@ -28,8 +28,8 @@ begin
 	encoder_tilt_ent: entity work.encoder PORT MAP(
 		clk => fpgaclk,
 		res => reset,
-		A => A,
-		B => B,
+		Ain => A,
+		Bin => B,
 		val => encoder_tilt
 	);
 	

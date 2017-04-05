@@ -26,6 +26,11 @@ NET "B"  	LOC = "M15"  ;
 #NET "JC<2>"	LOC = "J16"  ; 
 #NET "JC<3>"  	LOC = "G13"  ;
 #NET "JC<4>"  	LOC = "H16"  ;
+NET "spi_ss"	LOC = "G16";
+NET "spi_data_out"	LOC = "H16";
+NET "spi_clk"	LOC = "G13";
+NET "spi_data_in"	LOC = "J12";
+
 ##--------------------------------------
 #NET "JD<1>"  	LOC = "J13"  ;  #PMOD 4
 #NET "JD<2>"	LOC = "M18"  ; 
@@ -64,14 +69,14 @@ NET "led<5>"  	LOC = "P15"  ;
 NET "led<6>"  	LOC = "F4"  ; 
 NET "led<7>"  	LOC = "R4"  ; 
 #
-NET "Sw<0>"  	LOC = "G18"  ;
-NET "Sw<1>"  	LOC = "H18"  ;
-NET "Sw<2>"  	LOC = "K18"  ;
-NET "Sw<3>"  	LOC = "K17"  ;
-NET "Sw<4>"  	LOC = "L14"  ;
-NET "Sw<5>"  	LOC = "L13"  ;
-NET "Sw<6>"  	LOC = "N17"  ;
-NET "Sw<7>"  	LOC = "R17"  ;
+#NET "Sw<0>"  	LOC = "G18"  ;
+#NET "Sw<1>"  	LOC = "H18"  ;
+#NET "Sw<2>"  	LOC = "K18"  ;
+#NET "Sw<3>"  	LOC = "K17"  ;
+#NET "Sw<4>"  	LOC = "L14"  ;
+#NET "Sw<5>"  	LOC = "L13"  ;
+#NET "Sw<6>"  	LOC = "N17"  ;
+#NET "Sw<7>"  	LOC = "R17"  ;
 #
 #NET "VGA<9>"  	LOC = "U3"  ; #VS          
 #NET "VGA<8>"  	LOC = "T4"  ; #HS       

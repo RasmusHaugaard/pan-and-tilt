@@ -29,16 +29,6 @@ architecture Behavioral of spi_module is
 		o2 : OUT std_logic
 		);
 	END COMPONENT;
-	
-	COMPONENT encoder
-	PORT(
-		clk : IN std_logic;
-		res : IN std_logic;
-		A : IN std_logic;
-		B : IN std_logic;          
-		Led : OUT std_logic_vector(7 downto 0)
-		);
-	END COMPONENT;
 
 	signal shiftreg_in : std_logic_vector(7 downto 0) := "00000000";
 	signal shiftreg_out : std_logic_vector(7 downto 0) := "00000000";
@@ -51,6 +41,9 @@ architecture Behavioral of spi_module is
 	signal dummy : std_logic_vector(7 downto 0) := "00000000";
 	signal spi_address : std_logic_vector (5 downto 0);
 	signal reset : std_logic := '0';	 
+	
+	signal sent_encoder_tilt : std_logic_vector(7 downto 0) := "00000000";
+	
 	signal PWM_pan : std_logic_vector(7 downto 0):= "00000000";
 	signal PWM_tilt : std_logic_vector(7 downto 0):= "00000000";
 	signal encoder_pan : std_logic_vector(7 downto 0);
@@ -64,6 +57,11 @@ architecture Behavioral of spi_module is
 	constant encoder_tilt_addr : std_logic_vector(5 downto 0) := "000100";
 	constant homing_pan_addr : std_logic_vector(5 downto 0) := "000101";
 	constant homing_tilt_addr : std_logic_vector(5 downto 0) := "000110";
+	 
+	signal clk_scaled : STD_LOGIC;
+	constant prescale_val : integer := 50;
+	signal counter : integer := prescale_val;
+	 
 	 
 begin 
 
@@ -82,70 +80,97 @@ begin
 	);
 		
 		
-	Inst_encoder_pan: encoder PORT MAP(
+	encoder_tilt_ent: entity work.encoder PORT MAP(
 		clk => fpgaclk,
 		res => reset,
-		A => A,
-		B => B,
-		Led => encoder_tilt
+		Ain => A,
+		Bin => B,
+		val => encoder_tilt
 	);
 		
+	process (fpgaclk)
+	begin
+		if rising_edge(fpgaclk) then
+			if counter = 1 then
+				clk_scaled <= '1';
+				counter <= prescale_val;
+			else
+				clk_scaled <= '0';
+				counter <= counter - 1;
+			end if;
+		end if;
+	end process;
 		
 	spi : process (fpgaclk) is
 	begin
 		if rising_edge(fpgaclk) then
-			-- synchronization:
-			sck_s  <= spi_clk;
-			mosi_s <= spi_data_in;
-			nss_s  <= spi_ss;
-			-- delay for edge detect:
-			sck_d  <= sck_s;
-			nss_d  <= nss_s;
-			
 			reset <= '0';
-			led <= PWM_tilt;
-			--encoder_pan <= "0000"&sw;
- 
-			-- shifter.
-			slaveselected : if nss_s = '0' then
-				sck_rising_edge : if sck_s = '1' and sck_d = '0' then
-					shiftreg_in <= shiftreg_in(shiftreg_in'left -1 downto 0) & mosi_s;
-				end if sck_rising_edge;
-				sck_falling_edge : if sck_s = '0' and sck_d = '1' then
-					spi_data_out <= shiftreg_out(7);
-					shiftreg_out(7 downto 1) <= shiftreg_out(6 downto 0);
-				end if sck_falling_edge;
-			end if slaveselected;
-				-- save incoming word.
-			if nss_s = '1' and nss_d = '0' then
-				if spi_state = '1' then
-					if shiftreg_in /= dummy then
-						if shiftreg_in(7) = '0' then
-							spi_state <= '0';
-							spi_address <= shiftreg_in(5 downto 0);
-						else
-							spi_state <= '1';
-							spi_address <= shiftreg_in(5 downto 0);
-							case shiftreg_in(5 downto 0) is
-								when encoder_pan_addr => shiftreg_out <= encoder_pan;
-																 reset <= '1';
-								when encoder_tilt_addr => shiftreg_out <= encoder_tilt;
-																	reset <= '1';
-								when homing_pan_addr => shiftreg_out <= homing_pan;
-								when homing_tilt_addr => shiftreg_out <= homing_tilt;
+			if clk_scaled='1' then
+				-- synchronization:
+				sck_s  <= spi_clk;
+				mosi_s <= spi_data_in;
+				nss_s  <= spi_ss;
+				-- delay for edge detect:
+				sck_d  <= sck_s;
+				nss_d  <= nss_s;
+
+					-- shifter.
+					slaveselected : if nss_s = '0' then
+						if nss_d = '1' then
+						 spi_data_out <= shiftreg_out(shiftreg_out'left);
+						 shiftreg_out(7 downto 0) <= shiftreg_out(6 downto 0) & '0';
+						end if;
+						 
+						 sck_rising_edge : if sck_s = '1' and sck_d = '0' then
+							  shiftreg_in <= shiftreg_in(shiftreg_in'left -1 downto 0) & mosi_s;
+						 end if sck_rising_edge;
+						 
+						 sck_falling_edge : if sck_s = '0' and sck_d = '1' then
+								spi_data_out <= shiftreg_out(shiftreg_out'left);
+								shiftreg_out(7 downto 0) <= shiftreg_out(6 downto 0) & '0';
+						 end if sck_falling_edge;
+					end if slaveselected;
+	 
+					-- save incoming byte.
+					if nss_s = '1' and nss_d = '0' then
+						if spi_state = '1' then
+						
+							if shiftreg_in /= dummy then
+								if shiftreg_in(7) = '0' then
+									spi_state <= '0';
+									spi_address <= shiftreg_in(5 downto 0);
+									
+								else
+									spi_state <= '1';
+									spi_address <= shiftreg_in(5 downto 0);
+									
+									case shiftreg_in(5 downto 0) is
+										when encoder_pan_addr => shiftreg_out <= "11111110";
+																		 --reset <= '1';
+																		 
+										when encoder_tilt_addr => shiftreg_out <= encoder_tilt;
+																		  sent_encoder_tilt <= encoder_tilt;
+																		  reset <= '1';
+																		  
+										when homing_pan_addr => shiftreg_out <= homing_pan;
+										when homing_tilt_addr => shiftreg_out <= homing_tilt;
+										when others => shiftreg_out <= dummy;
+									end case;
+								end if;
+							end if;
+						else			
+							case spi_address is
+								when PWM_pan_addr => PWM_pan <= shiftreg_in;
+								when PWM_tilt_addr => PWM_tilt <= shiftreg_in;
 								when others => shiftreg_out <= dummy;
 							end case;
-						end if;
+							spi_state <= '1';
+						end if;					
 					end if;
-				else			
-					case spi_address is
-						when PWM_pan_addr => PWM_pan <= shiftreg_in;
-						when PWM_tilt_addr => PWM_tilt <= shiftreg_in;
-						when others => shiftreg_out <= dummy;
-					end case;
-					spi_state <= '1';
-				end if;					
-			end if;
-		end if; 
-	end process spi;
+				end if;
+        end if; 
+		  
+		  led <= sent_encoder_tilt;
+    end process spi;
+	 		
 end Behavioral;
