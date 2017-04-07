@@ -28,6 +28,7 @@
 #include "spi.h"
 #include "fpga.h"
 #include "matlab.h"
+#include "PID.h"
 
 /*****************************    Defines    *******************************/
 
@@ -59,6 +60,7 @@ int main(void)
   start_task( TASK_SPI_RX, spi_rx_task );
   start_task( TASK_ENCODER, encoder_task );
   start_task( TASK_MATLAB_ENCODER, matlab_encoder_task );
+  start_task( TASK_PID, pid_task);
 
   schedule();
 

@@ -32,6 +32,7 @@
 #define TASK_ENCODER        USER_TASK+5
 #define TASK_MATLAB_ENCODER USER_TASK+6
 #define TASK_UI             USER_TASK+7
+#define TASK_PID            USER_TASK+8
 
 
 // Interrupt Service Routines.
