@@ -8,8 +8,8 @@ entity spi_module is
 		spi_data_in : in  STD_LOGIC;
 		spi_data_out : out  STD_LOGIC;
 		led  : out STD_LOGIC_VECTOR (7 downto 0);
-		o1_pan : out  STD_LOGIC;
-		o2_pan : out  STD_LOGIC;
+		--o1_pan : out  STD_LOGIC;
+		--o2_pan : out  STD_LOGIC;
 		o1_tilt : out  STD_LOGIC;
 		o2_tilt : out  STD_LOGIC;
 		A : in  STD_LOGIC;
@@ -36,7 +36,7 @@ architecture Behavioral of spi_module is
 		res : IN std_logic;
 		A : IN std_logic;
 		B : IN std_logic;          
-		Led : OUT std_logic_vector(7 downto 0)
+		val : OUT std_logic_vector(7 downto 0)
 		);
 	END COMPONENT;
 
@@ -67,12 +67,12 @@ architecture Behavioral of spi_module is
 	 
 begin 
 
-	hbridge_pwm_pan: hbridge_pwm PORT MAP(
-		clk => fpgaclk,
-		signed_dutycycle => PWM_pan,
-		o1 => o1_pan,
-		o2 => o2_pan
-	);
+--	hbridge_pwm_pan: hbridge_pwm PORT MAP(
+--		clk => fpgaclk,
+--		signed_dutycycle => PWM_pan,
+--		o1 => o1_pan,
+--		o2 => o2_pan
+--	);
 		
 	hbridge_pwm_tilt: hbridge_pwm PORT MAP(
 		clk => fpgaclk,
@@ -87,7 +87,7 @@ begin
 		res => reset,
 		A => A,
 		B => B,
-		Led => encoder_tilt
+		val => encoder_tilt
 	);
 		
 		
@@ -107,13 +107,18 @@ begin
 			--encoder_pan <= "0000"&sw;
  
 			-- shifter.
+			if sck_d = '1' and sck_s = '0' then
+					spi_data_out <= shiftreg_out(7);
+					shiftreg_out(7 downto 0) <= shiftreg_out(6 downto 0) & '0';
+			end if;
+			
 			slaveselected : if nss_s = '0' then
 				sck_rising_edge : if sck_s = '1' and sck_d = '0' then
 					shiftreg_in <= shiftreg_in(shiftreg_in'left -1 downto 0) & mosi_s;
 				end if sck_rising_edge;
 				sck_falling_edge : if sck_s = '0' and sck_d = '1' then
 					spi_data_out <= shiftreg_out(7);
-					shiftreg_out(7 downto 1) <= shiftreg_out(6 downto 0);
+					shiftreg_out(7 downto 0) <= shiftreg_out(6 downto 0) & '0';
 				end if sck_falling_edge;
 			end if slaveselected;
 				-- save incoming word.
@@ -128,9 +133,7 @@ begin
 							spi_address <= shiftreg_in(5 downto 0);
 							case shiftreg_in(5 downto 0) is
 								when encoder_pan_addr => shiftreg_out <= encoder_pan;
-																 reset <= '1';
 								when encoder_tilt_addr => shiftreg_out <= encoder_tilt;
-																	reset <= '1';
 								when homing_pan_addr => shiftreg_out <= homing_pan;
 								when homing_tilt_addr => shiftreg_out <= homing_tilt;
 								when others => shiftreg_out <= dummy;

@@ -21,10 +21,6 @@ begin
 process (clk)
 begin
 	if rising_edge(clk) then
-	
-		if res = '1' then
-			cnt <= (others => '0');
-		else
 			if LA = '0' and A = '1' then
 				if B = '1' then
 					cnt <= cnt + 1;
@@ -55,7 +51,6 @@ begin
 			LA <= A;
 			LB <= B;
 		end if;
-	end if;
 end process;
 
 val <= STD_LOGIC_VECTOR(cnt);
