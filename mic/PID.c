@@ -21,6 +21,8 @@
 /***************************** Include files *******************************/
 #include "tm4c123gh6pm.h"
 #include "emp_type.h"
+#include "events.h"
+#include "tmodel.h"
 /*****************************    Defines    *******************************/
 
 #define TICKS_PR_REV 360
@@ -49,6 +51,13 @@ void pid_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 /****************************************************************************
 *   Function : See .h file for information
 *****************************************************************************/
+    if(get_msg_event(SEB_UI_EVENTS)==UIE_NEW_TARGET)
+    {
+        target = get_msg_data(SEB_UI_EVENTS);
+        sum_error = 0;
+        prev_error = 0;
+    }
+
 
     FP32 si_position = curr_position * RAD_PR_TICK;
     FP32 si_target = target * RAD_PR_TICK;
@@ -63,13 +72,23 @@ void pid_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
     pwm_procent += Kd * (error - prev_error);
 
     pwm_procent /= MAX_VOLTAGE;
+    pwm_procent *= 127;
 
-    if(pwm_procent < -1)
-        pwm_procent = -1;
-    else if(pwm_procent > 1)
-        pwm_procent = 1;
+    if(pwm_procent > 0)
+        pwm_procent += 0.5;
+    else if(pwm_procent < 0)
+        pwm_procent -= 0.5;
+
+    INT16S result=(INT16S)pwm_procent;
+
+    if(result < -128)
+        result = -128;
+    else if(result > 127)
+        result = 127;
 
     prev_error = error;
+    put_msg_event(SEB_PWM_EVENTS, PIDE_NEW_PWM);
+    put_msg_data(SEB_PWM_EVENTS, result);
 }
 
 /****************************** End Of Module *******************************/

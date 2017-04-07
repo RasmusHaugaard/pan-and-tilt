@@ -50,6 +50,11 @@
 #define SSM_ENC_LOW            33
 #define SSM_ENC_HIGH           33
 
+//Shared Event Buffer.
+//--------------------
+#define SEB_UI_EVENTS          10
+#define SEB_PWM_EVENTS         11
+
 // QUEUEs.
 // -------
 #define Q_UART_TX 	USER_QUEUE
