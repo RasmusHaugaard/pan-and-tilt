@@ -4,7 +4,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity spi_module is
 	Port (
 		clk : in STD_LOGIC;
-		spi_ss, spi_clk, spi_mosi : in  STD_LOGIC;
+		spi_ss_in, spi_clk_in, spi_mosi : in  STD_LOGIC;
 		spi_miso : out STD_LOGIC;
 		enc_tilt_A, enc_tilt_B: in  STD_LOGIC;
 		pwm_tilt_o1, pwm_tilt_o2 : out  STD_LOGIC;
@@ -29,18 +29,21 @@ architecture Behavioral of spi_module is
 --SIGNALS
 	--SPI
 	signal spi_shift_in, spi_shift_out : std_logic_vector(7 downto 0) := dummy;
+	signal spi_clk_shift, spi_ss_shift : std_logic_vector(9 downto 0);
 	signal spi_clk_d, spi_ss_d : std_logic;
+	signal spi_clk : std_logic := '0';
+	signal spi_ss : std_logic := '1';
 	signal spi_state : std_logic := spi_state_read;
 	signal spi_address : std_logic_vector (5 downto 0);
-	signal pulse_1MHz : STD_LOGIC;
+	signal spi_pulse : STD_LOGIC;
 	--ENC
 	signal enc_tilt_val : std_logic_vector(7 downto 0):= "00000000";
 	--PWM
 	signal hb_pwm_tilt_val : std_logic_vector(7 downto 0):= "00000000";
 begin 
-	prescaler_1Mhz_ent : entity work.prescaler generic map(prescale_val => 50) port map(
+	prescaler_1Mhz_ent : entity work.prescaler generic map(prescale_val => 5) port map(
 		clk => clk,
-		clk_scaled => pulse_1MHz
+		clk_scaled => spi_pulse
 	);
 	hb_pwm_tilt: entity work.hb_pwm PORT MAP(
 		clk => clk,
@@ -58,7 +61,23 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if pulse_1MHz='1' then
+			if spi_pulse='1' then
+			
+				spi_clk_shift <= spi_clk_shift(8 downto 0)& spi_clk_in;
+				spi_ss_shift <= spi_ss_shift(8 downto 0)& spi_ss_in;
+				
+				if spi_clk_shift = "1111111111" then
+					spi_clk <= '1';
+				elsif spi_clk_shift = "0000000000" then
+					spi_clk <= '0';
+				end if;
+				
+				if spi_ss_shift = "1111111111" then
+					spi_ss <= '1';
+				elsif spi_ss_shift = "0000000000" then
+					spi_ss <= '0';
+				end if;
+			
 				spi_clk_d  <= spi_clk;
 				spi_ss_d  <= spi_ss;
 					-- if slave becomes selected 1 -> 0

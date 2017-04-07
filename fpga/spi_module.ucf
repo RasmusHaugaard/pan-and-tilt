@@ -28,9 +28,9 @@ NET "enc_tilt_B"  	LOC = "M15"  ;
 #NET "JC<2>"	LOC = "J16"  ; 
 #NET "JC<3>"  	LOC = "G13"  ;
 #NET "JC<4>"  	LOC = "H16"  ;
-NET "spi_ss"	LOC = "G16";
+NET "spi_ss_in"	LOC = "G16";
 NET "spi_miso"	LOC = "H16";
-NET "spi_clk"	LOC = "G13";
+NET "spi_clk_in"	LOC = "G13";
 NET "spi_mosi"	LOC = "J12";
 
 ##--------------------------------------
