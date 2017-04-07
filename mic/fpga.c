@@ -45,6 +45,7 @@ enum encoder_states
 /*****************************   Variables   *******************************/
 volatile INT16S encoder_pan_data = 0;
 volatile INT16S encoder_tilt_data = 0;
+INT8S last_encoder_tilt_data = 0;
 INT8U uart_data;
 /*****************************   Functions   *******************************/
 void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
@@ -76,7 +77,9 @@ void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
     case ENC_TILT:
         if( get_queue( Q_SPI_RX, &uart_data, WAIT_FOREVER ))
         {
-            encoder_tilt_data += (INT8S)uart_data;
+            INT8S new_data = (INT8S)uart_data;
+            encoder_tilt_data += new_data - last_encoder_tilt_data;
+            last_encoder_tilt_data = new_data;
             signal ( SEM_SPI_AVAILABLE );
             set_state( ENC_IDLE );
         }
