@@ -3,11 +3,13 @@
 # Revision 12-7-2009
 ############################# N E X Y S - kit ########
 #NET "JA<1>"  	LOC = "L15"  ;  #PMOD 1
+#NET "deb1"				LOC = "L15";
 #NET "JA<2>"	LOC = "K12"  ; 
+#NET "deb2"				LOC = "K12";
 #NET "JA<3>"  	LOC = "L17"  ;
-NET "A"  	LOC = "L17"  ;
+NET "enc_tilt_A"  	LOC = "L17"  ;
 #NET "JA<4>"  	LOC = "M15"  ;
-NET "B"  	LOC = "M15"  ;
+NET "enc_tilt_B"  	LOC = "M15"  ;
 ##NET "JA<5>"  LOC = "K13"  ;  #PMOD 1
 ##NET "JA<6>"	LOC = "L16"  ; 
 ##NET "JA<7>"  LOC = "M14"  ;
@@ -27,17 +29,17 @@ NET "B"  	LOC = "M15"  ;
 #NET "JC<3>"  	LOC = "G13"  ;
 #NET "JC<4>"  	LOC = "H16"  ;
 NET "spi_ss"	LOC = "G16";
-NET "spi_data_out"	LOC = "H16";
+NET "spi_miso"	LOC = "H16";
 NET "spi_clk"	LOC = "G13";
-NET "spi_data_in"	LOC = "J12";
+NET "spi_mosi"	LOC = "J12";
 
 ##--------------------------------------
 #NET "JD<1>"  	LOC = "J13"  ;  #PMOD 4
 #NET "JD<2>"	LOC = "M18"  ; 
 #NET "JD<3>"  	LOC = "N18"  ;
-NET "o1_tilt"  	LOC = "N18"  ;
+NET "pwm_tilt_o1"  	LOC = "N18"  ;
 #NET "JD<4>"  	LOC = "P18"  ;
-NET "o2_tilt"  	LOC = "P18"  ;
+NET "pwm_tilt_o2"  	LOC = "P18"  ;
 
 
 
@@ -92,5 +94,5 @@ NET "led<7>"  	LOC = "R4"  ;
 #NET "PS2_CLK" 	LOC = "R12";
 #NET "PS2_DATA"	LOC = "P11";
 
-NET "fpgaclk"  		LOC = "B8"  ; # Clk 50 MHz
+NET "clk"  		LOC = "B8"  ; # Clk 50 MHz
 
