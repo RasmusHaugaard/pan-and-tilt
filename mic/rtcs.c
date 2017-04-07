@@ -284,13 +284,13 @@ void schedule()
     {
       if( pot[current_task].condition & TASK_WAIT_FOR_SEMAPHORE )
       {
-    	if( pos[pot[current_task].sem].count )
-    	{
-    	  if( !( pot[current_task].sem < (2 * MAX_QUEUES )))
-    	      pos[pot[current_task].sem].count--;
-   	      pot[current_task].event     = EVENT_SIGNAL;
-    	  pot[current_task].condition = TASK_READY;
-    	}
+        if( pos[pot[current_task].sem].count )
+        {
+          if( !( pot[current_task].sem < (2 * MAX_QUEUES )))
+              pos[pot[current_task].sem].count--;
+          pot[current_task].event     = EVENT_SIGNAL;
+          pot[current_task].condition = TASK_READY;
+        }
       }
       if( pot[current_task].condition & TASK_WAIT_FOR_TIMEOUT )
       {
