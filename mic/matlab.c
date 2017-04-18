@@ -31,7 +31,6 @@
 #define HIGH(x)  ((x) >> 8)
 #define LOW(x)  ((x) & 0xFF)
 
-
 #define SET_PWM_PAN     0x10
 #define SET_PWM_TILT    0x11
 #define ENC_ON          0x01
@@ -67,11 +66,12 @@ INT8U uart_cmd;
 INT8U uart_data;
 INT8U dummy_cnt = 0;
 BOOLEAN encoder_on = 0;
-volatile INT16S encoder_pan_data = 0;
-volatile INT16S encoder_tilt_data = 0;
+extern volatile INT16S encoder_pan_data;
+extern volatile INT16S encoder_tilt_data;
 /*****************************   Functions   *******************************/
 void matlab_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 {
+
     switch (my_state)
     {
     case FIRST_BYTE:
@@ -117,7 +117,7 @@ void matlab_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
             put_queue( Q_SPI_TX, uart_data, WAIT_FOREVER );
             set_state( WAIT_FOR_DUMMY );
         }
-
+        break;
     case WAIT_FOR_DUMMY:
         while( get_queue( Q_SPI_RX, &uart_data, WAIT_FOREVER ))
         {

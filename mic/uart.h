@@ -67,6 +67,8 @@ void uart0_putc( INT8U );
 *   Function : Put character to uart0 TX
 ******************************************************************************/
 
+BOOLEAN uart0_tx_full();
+
 void init_uart0( INT32U, INT8U, INT8U, INT8U );
 /*****************************************************************************
 *   Input    : Baud_rate

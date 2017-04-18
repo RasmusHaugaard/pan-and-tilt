@@ -43,8 +43,8 @@ enum encoder_states
 
 /*****************************   Constants   *******************************/
 /*****************************   Variables   *******************************/
-extern INT16S encoder_pan_data;
-extern INT16S encoder_tilt_data;
+volatile INT16S encoder_pan_data = 0;
+volatile INT16S encoder_tilt_data = 0;
 INT8U uart_data;
 /*****************************   Functions   *******************************/
 void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
@@ -78,7 +78,6 @@ void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
         {
             encoder_tilt_data += (INT8S)uart_data;
             signal ( SEM_SPI_AVAILABLE );
-            wait ( TIM_1_SEC );
             set_state( ENC_IDLE );
         }
         break;

@@ -23,12 +23,12 @@
 /***************************** Include files *******************************/
 
 /*****************************    Defines    *******************************/
-#define TIM_10_MSEC     20
-#define TIM_100_MSEC   200
-#define TIM_200_MSEC   400
-#define TIM_500_MSEC  1000
-#define TIM_1_SEC     2000
-#define TIM_2_SEC     4000
+#define TIM_10_MSEC     10
+#define TIM_100_MSEC   100
+#define TIM_200_MSEC   200
+#define TIM_500_MSEC   500
+#define TIM_1_SEC     1000
+#define TIM_2_SEC     2000
 
 /*****************************   Constants   *******************************/
 
