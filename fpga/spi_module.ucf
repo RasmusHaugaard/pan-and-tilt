@@ -23,6 +23,14 @@ NET "enc_tilt_B"  	LOC = "M15"  ;
 #NET "spi_data_out"	LOC = "T17";
 #NET "spi_clk"	LOC = "R15";
 #NET "spi_data_in"	LOC = "U18";
+
+NET "spi_ss"	LOC = "G16";
+NET "spi_data_out"	LOC = "H16";
+NET "spi_clk"	LOC = "G13";
+NET "spi_data_in" LOC = "J12";
+
+
+
 ##--------------------------------------
 #NET "JC<1>"  	LOC = "G15"  ;  #PMOD 3
 #NET "JC<2>"	LOC = "J16"  ; 
