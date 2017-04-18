@@ -23,6 +23,7 @@
 /***************************** Include files *******************************/
 
 /*****************************    Defines    *******************************/
+typedef void (*fptr)(INT8U);
 
 /*****************************   Constants   *******************************/
 
@@ -34,30 +35,12 @@ void init_spi();
 *   Function : Initialize SPI on port B.
 ******************************************************************************/
 
-
-void send_byte(INT8U data);
+void spi_write(INT8U data, fptr cb);
 /*****************************************************************************
-*   Input    : INT8U
+*   Input    : INT8U data, fptr cb
 *   Output   : -
-*   Function : Send byte using SPI.
-******************************************************************************/
-INT8U recieve_byte();
-/*****************************************************************************
-*   Input    : -
-*   Output   : INT8U
-*   Function : Receive byte using SPI.
-******************************************************************************/
-INT8U spi_read(INT8U addr);
-/*****************************************************************************
-*   Input    : INT8U
-*   Output   : INT8U
-*   Function : Read data from addr.
-******************************************************************************/
-void spi_write(INT8U addr, INT8U data);
-/*****************************************************************************
-*   Input    : INT8U addr, INT8U data
-*   Output   : -
-*   Function : Write data to addr.
+*   Function : Add data to tx queue and function pointer (callback) to ptr queue.
+*              The callback function will be called with the response data
 ******************************************************************************/
 void spi_tx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 /*****************************************************************************

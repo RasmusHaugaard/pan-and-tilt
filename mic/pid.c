@@ -23,6 +23,7 @@
 #include "emp_type.h"
 #include "events.h"
 #include "tmodel.h"
+#include "pid.h"
 /*****************************    Defines    *******************************/
 
 #define TICKS_PR_REV 360
@@ -44,7 +45,7 @@ INT16S curr_position = 0; //In ticks
 FP32 prev_error = 0;
 FP32 sum_error = 0;
 
-FP32 pwm_procent = 0;     //-1 to 1
+FP32 pwm = 0;     //-1 to 1
 
 /***************************** Start of Module ******************************/
 void pid_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
@@ -52,35 +53,36 @@ void pid_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 /****************************************************************************
 *   Function : See .h file for information
 *****************************************************************************/
-    if(get_msg_event(SEB_UI_EVENTS)==UIE_NEW_TARGET)
+    if(get_msg_event(SEB_UI_EVENTS) == UIE_NEW_TARGET)
     {
+        //TODO: for og imod at resette sum_error og prev_error
         target = get_msg_data(SEB_UI_EVENTS);
         sum_error = 0;
         prev_error = 0;
     }
-
 
     FP32 si_position = curr_position * RAD_PR_TICK;
     FP32 si_target = target * RAD_PR_TICK;
 
     FP32 error = si_target - si_position;
 
-    pwm_procent = Kp * error;
+    pwm = Kp * error;
 
     sum_error += error*delta_t;
-    pwm_procent += Ki * sum_error;
+    pwm += Ki * sum_error;
 
-    pwm_procent += Kd * (error - prev_error)/delta_t;
+    pwm += Kd * (error - prev_error)/delta_t;
 
-    pwm_procent /= MAX_VOLTAGE;
-    pwm_procent *= 127;
+    //TODO: Er det for at få det i volt??
+    pwm /= MAX_VOLTAGE;
+    pwm *= 127;
 
-    if(pwm_procent > 0)
-        pwm_procent += 0.5;
-    else if(pwm_procent < 0)
-        pwm_procent -= 0.5;
+    if(pwm > 0)
+        pwm += 0.5;
+    else if(pwm < 0)
+        pwm -= 0.5;
 
-    INT16S result=(INT16S)pwm_procent;
+    INT16S result=(INT16S)pwm;
 
     if(result < -128)
         result = -128;
@@ -93,7 +95,3 @@ void pid_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 }
 
 /****************************** End Of Module *******************************/
-
-
-
-

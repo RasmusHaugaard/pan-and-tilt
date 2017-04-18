@@ -43,5 +43,3 @@ INT16S get_msg_data(INT8U id)
     }
     return result;
 }
-
-
