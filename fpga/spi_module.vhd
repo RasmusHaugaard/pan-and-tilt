@@ -2,153 +2,128 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 entity spi_module is
-	Port ( 
-		spi_ss : in  STD_LOGIC;
-		spi_clk : in  STD_LOGIC;
-		spi_data_in : in  STD_LOGIC;
-		spi_data_out : out  STD_LOGIC;
-		led  : out STD_LOGIC_VECTOR (7 downto 0);
-		--o1_pan : out  STD_LOGIC;
-		--o2_pan : out  STD_LOGIC;
-		o1_tilt : out  STD_LOGIC;
-		o2_tilt : out  STD_LOGIC;
-		A : in  STD_LOGIC;
-		B : in  STD_LOGIC;
-		fpgaclk : in STD_LOGIC
+	Port (
+		clk : in STD_LOGIC;
+		spi_ss_in, spi_clk_in, spi_mosi : in  STD_LOGIC;
+		spi_miso : out STD_LOGIC;
+		enc_tilt_A, enc_tilt_B: in  STD_LOGIC;
+		pwm_tilt_o1, pwm_tilt_o2 : out  STD_LOGIC;
+		
+		--DEBUG
+		led  : out STD_LOGIC_VECTOR (7 downto 0)
 	);
 
 end spi_module;
 
 architecture Behavioral of spi_module is
-
-	COMPONENT hbridge_pwm
-	PORT(
-		clk : IN std_logic;
-		signed_dutycycle : IN std_logic_vector(7 downto 0);          
-		o1 : OUT std_logic;
-		o2 : OUT std_logic
-		);
-	END COMPONENT;
-	
-	COMPONENT encoder
-	PORT(
-		clk : IN std_logic;
-		res : IN std_logic;
-		A : IN std_logic;
-		B : IN std_logic;          
-		val : OUT std_logic_vector(7 downto 0)
-		);
-	END COMPONENT;
-
-	signal shiftreg_in : std_logic_vector(7 downto 0) := "00000000";
-	signal shiftreg_out : std_logic_vector(7 downto 0) := "00000000";
-	signal sck_s    : std_logic;  -- sync incoming sck to FPGA clock
-	signal sck_d    : std_logic;  -- delay flop for edge detect
-	signal mosi_s   : std_logic;  -- sync to FPGA clock
-	signal nss_s    : std_logic;  -- sync
-	signal nss_d    : std_logic;  -- delay for edge detect
-	signal spi_state : std_logic := '1'; -- R/W' mode. Default: read.
-	signal dummy : std_logic_vector(7 downto 0) := "00000000";
-	signal spi_address : std_logic_vector (5 downto 0);
-	signal reset : std_logic := '0';	 
-	signal PWM_pan : std_logic_vector(7 downto 0):= "00000000";
-	signal PWM_tilt : std_logic_vector(7 downto 0):= "00000000";
-	signal encoder_pan : std_logic_vector(7 downto 0);
-	signal encoder_tilt : std_logic_vector(7 downto 0);
-	signal homing_pan : std_logic_vector(7 downto 0);
-	signal homing_tilt : std_logic_vector(7 downto 0);
-
-	constant PWM_pan_addr : std_logic_vector(5 downto 0) := "000001";
-	constant PWM_tilt_addr : std_logic_vector(5 downto 0) := "000010";
-	constant encoder_pan_addr : std_logic_vector(5 downto 0) := "000011";
-	constant encoder_tilt_addr : std_logic_vector(5 downto 0) := "000100";
-	constant homing_pan_addr : std_logic_vector(5 downto 0) := "000101";
+--CONSTANTS
+	constant dummy : std_logic_vector(7 downto 0) := "00000000";
+	--constant pwm_pan_addr : std_logic_vector(5 downto 0) := "000001";
+	constant hb_pwm_tilt_addr : std_logic_vector(5 downto 0) := "000010";
+	--constant encoder_pan_addr : std_logic_vector(5 downto 0) := "000011";
+	constant enc_tilt_val_addr : std_logic_vector(5 downto 0) := "000100";
+	--constant homing_pan_addr : std_logic_vector(5 downto 0) := "000101";
 	constant homing_tilt_addr : std_logic_vector(5 downto 0) := "000110";
-	 
+	constant spi_state_read : std_logic := '1';
+	constant spi_state_write : std_logic := '0';
+--SIGNALS
+	--SPI
+	signal spi_shift_in, spi_shift_out : std_logic_vector(7 downto 0) := dummy;
+	signal spi_clk_shift, spi_ss_shift : std_logic_vector(9 downto 0);
+	signal spi_clk_d, spi_ss_d : std_logic;
+	signal spi_clk : std_logic := '0';
+	signal spi_ss : std_logic := '1';
+	signal spi_state : std_logic := spi_state_read;
+	signal spi_address : std_logic_vector (5 downto 0);
+	signal spi_pulse : STD_LOGIC;
+	--ENC
+	signal enc_tilt_val : std_logic_vector(7 downto 0):= "00000000";
+	--PWM
+	signal hb_pwm_tilt_val : std_logic_vector(7 downto 0):= "00000000";
 begin 
-
---	hbridge_pwm_pan: hbridge_pwm PORT MAP(
---		clk => fpgaclk,
---		signed_dutycycle => PWM_pan,
---		o1 => o1_pan,
---		o2 => o2_pan
---	);
-		
-	hbridge_pwm_tilt: hbridge_pwm PORT MAP(
-		clk => fpgaclk,
-		signed_dutycycle => PWM_tilt,
-		o1 => o1_tilt,
-		o2 => o2_tilt
+	prescaler_1Mhz_ent : entity work.prescaler generic map(prescale_val => 5) port map(
+		clk => clk,
+		clk_scaled => spi_pulse
 	);
-		
-		
-	Inst_encoder_pan: encoder PORT MAP(
-		clk => fpgaclk,
-		res => reset,
-		A => A,
-		B => B,
-		val => encoder_tilt
+	hb_pwm_tilt: entity work.hb_pwm PORT MAP(
+		clk => clk,
+		dutycycle_signed => hb_pwm_tilt_val,
+		o1 => pwm_tilt_o1,
+		o2 => pwm_tilt_o2
 	);
-		
-		
-	spi : process (fpgaclk) is
+	enc_tilt_ent: entity work.encoder PORT MAP(
+		clk => clk,
+		Ain => enc_tilt_A,
+		Bin => enc_tilt_B,
+		val => enc_tilt_val
+	);
+	
+	process (clk)
 	begin
-		if rising_edge(fpgaclk) then
-			-- synchronization:
-			sck_s  <= spi_clk;
-			mosi_s <= spi_data_in;
-			nss_s  <= spi_ss;
-			-- delay for edge detect:
-			sck_d  <= sck_s;
-			nss_d  <= nss_s;
+		if rising_edge(clk) then
+			if spi_pulse='1' then
 			
-			reset <= '0';
-			led <= PWM_tilt;
-			--encoder_pan <= "0000"&sw;
- 
-			-- shifter.
-			if sck_d = '1' and sck_s = '0' then
-					spi_data_out <= shiftreg_out(7);
-					shiftreg_out(7 downto 0) <= shiftreg_out(6 downto 0) & '0';
-			end if;
+				spi_clk_shift <= spi_clk_shift(8 downto 0)& spi_clk_in;
+				spi_ss_shift <= spi_ss_shift(8 downto 0)& spi_ss_in;
+				
+				if spi_clk_shift = "1111111111" then
+					spi_clk <= '1';
+				elsif spi_clk_shift = "0000000000" then
+					spi_clk <= '0';
+				end if;
+				
+				if spi_ss_shift = "1111111111" then
+					spi_ss <= '1';
+				elsif spi_ss_shift = "0000000000" then
+					spi_ss <= '0';
+				end if;
 			
-			slaveselected : if nss_s = '0' then
-				sck_rising_edge : if sck_s = '1' and sck_d = '0' then
-					shiftreg_in <= shiftreg_in(shiftreg_in'left -1 downto 0) & mosi_s;
-				end if sck_rising_edge;
-				sck_falling_edge : if sck_s = '0' and sck_d = '1' then
-					spi_data_out <= shiftreg_out(7);
-					shiftreg_out(7 downto 0) <= shiftreg_out(6 downto 0) & '0';
-				end if sck_falling_edge;
-			end if slaveselected;
-				-- save incoming word.
-			if nss_s = '1' and nss_d = '0' then
-				if spi_state = '1' then
-					if shiftreg_in /= dummy then
-						if shiftreg_in(7) = '0' then
-							spi_state <= '0';
-							spi_address <= shiftreg_in(5 downto 0);
-						else
-							spi_state <= '1';
-							spi_address <= shiftreg_in(5 downto 0);
-							case shiftreg_in(5 downto 0) is
-								when encoder_pan_addr => shiftreg_out <= encoder_pan;
-								when encoder_tilt_addr => shiftreg_out <= encoder_tilt;
-								when homing_pan_addr => shiftreg_out <= homing_pan;
-								when homing_tilt_addr => shiftreg_out <= homing_tilt;
-								when others => shiftreg_out <= dummy;
-							end case;
+				spi_clk_d  <= spi_clk;
+				spi_ss_d  <= spi_ss;
+					-- if slave becomes selected 1 -> 0
+					if spi_ss_d = '1' and spi_ss = '0' then
+						spi_miso <= spi_shift_out(7);
+						spi_shift_out(7 downto 0) <= spi_shift_out(6 downto 0) & '0';
+					end if;
+					-- if slave is selected
+					if spi_ss = '0' then
+						if spi_clk_d = '0' and spi_clk = '1' then
+							spi_shift_in <= spi_shift_in(6 downto 0) & spi_mosi;
+						end if;
+						if spi_clk_d = '1' and spi_clk = '0' then
+							spi_miso <= spi_shift_out(7);
+							spi_shift_out(7 downto 0) <= spi_shift_out(6 downto 0) & '0';
 						end if;
 					end if;
-				else			
-					case spi_address is
-						when PWM_pan_addr => PWM_pan <= shiftreg_in;
-						when PWM_tilt_addr => PWM_tilt <= shiftreg_in;
-						when others => shiftreg_out <= dummy;
-					end case;
-					spi_state <= '1';
-				end if;					
-			end if;
-		end if; 
-	end process spi;
+					-- if slave becomes unselected 0 -> 1
+					if spi_ss_d = '0' and spi_ss = '1' then
+						if spi_state = spi_state_read then
+							if spi_shift_in /= dummy then -- if received byte != dummy byte
+								if spi_shift_in(7) = '0' then -- request to write to address received
+									spi_state <= spi_state_write;
+									spi_address <= spi_shift_in(5 downto 0);
+								else -- request to read from address received
+									spi_state <= spi_state_read;									
+									case spi_shift_in(5 downto 0) is																		 
+										when
+											enc_tilt_val_addr => 
+												spi_shift_out <= enc_tilt_val;
+										when others => spi_shift_out <= dummy;
+									end case;
+								end if;
+							end if;
+						else -- spi_state = spi_state_write
+							case spi_address is
+								when hb_pwm_tilt_addr => hb_pwm_tilt_val <= spi_shift_in;
+								when others => NULL;
+							end case;
+							spi_shift_out <= dummy;
+							spi_state <= '1';
+						end if;					
+					end if;
+				end if; --spi pulse
+        end if; --rising edge clk
+    end process;
+	 
+	 led <= enc_tilt_val;
 end Behavioral;
