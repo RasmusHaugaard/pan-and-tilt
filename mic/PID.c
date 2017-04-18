@@ -26,13 +26,14 @@
 /*****************************    Defines    *******************************/
 
 #define TICKS_PR_REV 360
-#define PI 3.14159
+#define PI           3.14159
 #define RAD_PR_TICK  2 * PI / TICKS_PR_REV
-#define MAX_VOLTAGE 12
+#define MAX_VOLTAGE  12
+#define delta_t      0.001
 
-FP32 Kp = 100.5;
-FP32 Ki = 14.2;
-FP32 Kd = 3.7;
+FP32 Kp = 14.05;
+FP32 Ki = 16.86;
+FP32 Kd = 4.777;
 /*****************************   Constants   *******************************/
 
 /*****************************   Variables   *******************************/
@@ -66,10 +67,10 @@ void pid_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 
     pwm_procent = Kp * error;
 
-    sum_error += error;
+    sum_error += error*delta_t;
     pwm_procent += Ki * sum_error;
 
-    pwm_procent += Kd * (error - prev_error);
+    pwm_procent += Kd * (error - prev_error)/delta_t;
 
     pwm_procent /= MAX_VOLTAGE;
     pwm_procent *= 127;
