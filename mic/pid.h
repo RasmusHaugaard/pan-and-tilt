@@ -21,7 +21,7 @@
 /*****************************    Defines    *******************************/
 
 /*****************************   Functions   *******************************/
-void pid_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+INT8U pid_next_pwm(INT16S pos, INT16S target);
 /****************************************************************************
 *   Input    : void
 *   Output   : Template

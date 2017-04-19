@@ -64,11 +64,9 @@ int main(void)
 
   //File initialization
   F_UART = create_file( uart_get_q, uart_put_q );
-  F_SPI = create_file( spi_get_q, spi_put_q );
 
   //Semaphore initialization
-  SEM_SPI_AVAILABLE = create_sem();
-  preset_sem( SEM_SPI_AVAILABLE, 1 );
+  SEM_STATE_UPDATED = create_sem();
 
   //Task initialization
   create_task( uart_tx_task, "UART TX" );
@@ -80,7 +78,7 @@ int main(void)
 
   create_task( encoder_task, "ENCODER" );
   create_task( matlab_encoder_task, "ENC MATLAB" );
-  create_task( pid_task, "PID" );
+  create_task( controller_task, "CONTROLLER" );
 
   schedule();
 }

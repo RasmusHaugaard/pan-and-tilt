@@ -19,10 +19,7 @@
 /**************************** Include Libraries ****************************/
 #include <stdint.h>
 /***************************** Include files *******************************/
-#include "tm4c123gh6pm.h"
 #include "emp_type.h"
-#include "events.h"
-#include "tmodel.h"
 #include "pid.h"
 /*****************************    Defines    *******************************/
 
@@ -39,39 +36,25 @@ FP32 Kd = 4.777;
 
 /*****************************   Variables   *******************************/
 
-INT16S target = 0;        //In ticks
-INT16S curr_position = 0; //In ticks
-
 FP32 prev_error = 0;
 FP32 sum_error = 0;
 
-FP32 pwm = 0;     //-1 to 1
+FP32 pwm;     //-1 to 1
 
 /***************************** Start of Module ******************************/
-void pid_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
+INT8S pid_next_pwm(INT16S curr_position, INT16S target)
 {
-/****************************************************************************
-*   Function : See .h file for information
-*****************************************************************************/
-    if(get_msg_event(SEB_UI_EVENTS) == UIE_NEW_TARGET)
-    {
-        //TODO: for og imod at resette sum_error og prev_error
-        target = get_msg_data(SEB_UI_EVENTS);
-        sum_error = 0;
-        prev_error = 0;
-    }
-
     FP32 si_position = curr_position * RAD_PR_TICK;
     FP32 si_target = target * RAD_PR_TICK;
 
     FP32 error = si_target - si_position;
+    sum_error += error * delta_t;
 
     pwm = Kp * error;
-
-    sum_error += error*delta_t;
     pwm += Ki * sum_error;
+    pwm += Kd * (error - prev_error) / delta_t;
 
-    pwm += Kd * (error - prev_error)/delta_t;
+    prev_error = error;
 
     //TODO: Er det for at få det i volt??
     pwm /= MAX_VOLTAGE;
@@ -82,16 +65,12 @@ void pid_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
     else if(pwm < 0)
         pwm -= 0.5;
 
-    INT16S result=(INT16S)pwm;
+    if(pwm < -128)
+        pwm = -128;
+    else if(pwm > 127)
+        pwm = 127;
 
-    if(result < -128)
-        result = -128;
-    else if(result > 127)
-        result = 127;
-
-    prev_error = error;
-    put_msg_event(SEB_PWM_EVENTS, PIDE_NEW_PWM);
-    put_msg_data(SEB_PWM_EVENTS, result);
+    return (INT8S) pwm;
 }
 
 /****************************** End Of Module *******************************/
