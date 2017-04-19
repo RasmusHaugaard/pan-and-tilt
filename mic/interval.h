@@ -2,7 +2,7 @@
 #define INTERVAL_H_
 
 #include <stdint.h>
-#include "emp_types.h"
+#include "emp_type.h"
 #include "glob_def.h"
 
 #define MAX_INTERVALS 16

@@ -48,7 +48,7 @@ void init_spi(void){
     SSI2_CR1_R|=(1<<1);    //enabling SSI
 }
 
-fptr ptr_buf[QUEUE_SIZE + 1];
+fptr buf[QUEUE_SIZE + 1];
 INT8U head = 0;
 INT8U tail = 0;
 

@@ -23,15 +23,15 @@
 #include "tm4c123gh6pm.h"
 #include "emp_type.h"
 #include "glob_def.h"
-#include "tmodel.h"
 #include "encoder.h"
-#include "swtimers.h"
 #include "spi.h"
+#include "rtcs.h"
+#include "interval.h"
 /*****************************    Defines    *******************************/
 #define READ_REG                (1<<7)
 #define FPGA_encoder_pan_reg    (0x03 | READ_REG)
 #define FPGA_encoder_tilt_reg   (0x04 | READ_REG)
-#define DUMMY
+#define DUMMY 0
 /*****************************   Constants   *******************************/
 /*****************************   Variables   *******************************/
 INT16S encoder_tilt_data = 0;
@@ -39,8 +39,11 @@ INT16S encoder_tilt_data = 0;
 /*****************************   Functions   *******************************/
 
 void update_tilt_encoder(INT8U spi_data){
+    static INT8S last_data;
+    static BOOLEAN initialized = FALSE;
     INT8S new_data = (INT8S)spi_data;
-    static INT8S last_data = new_data;
+    if (!initialized)
+        last_data = new_data;
     INT8S delta = new_data - last_data;
     encoder_tilt_data += delta;
     last_data = new_data;

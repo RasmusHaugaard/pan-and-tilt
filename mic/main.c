@@ -33,7 +33,6 @@
 #include "uart.h"
 #include "spi.h"
 
-#include "matlab.h"
 #include "pid.h"
 
 /*****************************    Defines    *******************************/
@@ -43,7 +42,7 @@
 /*****************************   Variables   *******************************/
 FILE F_UART, F_SPI;
 QUEUE Q_UART_TX, Q_UART_RX, Q_SPI_TX, Q_SPI_RX;
-SEM SEM_SPI_AVAILABLE;
+SEM SEM_STATE_UPDATED;
 /*****************************   Functions   *******************************/
 
 int main(void)
@@ -51,7 +50,7 @@ int main(void)
   set_80MHz();
   init_gpio();
 
-  init_uart0( 115200, 8, 1, 'n' );
+  uart0_init( 115200, 8, 1, 'n' );
   init_spi();
 
   init_rtcs();
@@ -74,11 +73,7 @@ int main(void)
   create_task( spi_tx_task, "SPI TX" );
   create_task( spi_rx_task, "SPI RX" );
 
-  create_task( matlab_task, "MATLAB" );
-
   create_task( encoder_task, "ENCODER" );
-  create_task( matlab_encoder_task, "ENC MATLAB" );
-  create_task( controller_task, "CONTROLLER" );
 
   schedule();
 }

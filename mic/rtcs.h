@@ -1,6 +1,9 @@
 #ifndef _RTCS_H
 #define _RTCS_H
 
+#include <stdint.h>
+#include "emp_type.h"
+
 typedef unsigned char TASK;
 typedef unsigned char SEM;
 typedef unsigned char QUEUE;
