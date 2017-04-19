@@ -7,9 +7,7 @@
 #NET "JA<2>"	LOC = "K12"  ; 
 #NET "deb2"				LOC = "K12";
 #NET "JA<3>"  	LOC = "L17"  ;
-NET "enc_tilt_A"  	LOC = "L17"  ;
 #NET "JA<4>"  	LOC = "M15"  ;
-NET "enc_tilt_B"  	LOC = "M15"  ;
 ##NET "JA<5>"  LOC = "K13"  ;  #PMOD 1
 ##NET "JA<6>"	LOC = "L16"  ; 
 ##NET "JA<7>"  LOC = "M14"  ;
@@ -24,32 +22,29 @@ NET "enc_tilt_B"  	LOC = "M15"  ;
 #NET "spi_clk"	LOC = "R15";
 #NET "spi_data_in"	LOC = "U18";
 
-NET "spi_ss"	LOC = "G16";
-NET "spi_data_out"	LOC = "H16";
-NET "spi_clk"	LOC = "G13";
-NET "spi_data_in" LOC = "J12";
-
-
-
-##--------------------------------------
-#NET "JC<1>"  	LOC = "G15"  ;  #PMOD 3
-#NET "JC<2>"	LOC = "J16"  ; 
-#NET "JC<3>"  	LOC = "G13"  ;
-#NET "JC<4>"  	LOC = "H16"  ;
-NET "spi_ss_in"	LOC = "G16";
-NET "spi_miso"	LOC = "H16";
-NET "spi_clk_in"	LOC = "G13";
-NET "spi_mosi"	LOC = "J12";
+NET "spi_ss_in"	LOC = "G16"; #JC9
+NET "spi_miso"	LOC = "H16"; #JC4
+NET "spi_clk_in"	LOC = "G13"; #JC3
+NET "spi_mosi"	LOC = "J12"; #JC10
 
 ##--------------------------------------
 #NET "JD<1>"  	LOC = "J13"  ;  #PMOD 4
 #NET "JD<2>"	LOC = "M18"  ; 
 #NET "JD<3>"  	LOC = "N18"  ;
-NET "pwm_tilt_o1"  	LOC = "N18"  ;
 #NET "JD<4>"  	LOC = "P18"  ;
-NET "pwm_tilt_o2"  	LOC = "P18"  ;
+NET "mot_a_o1" LOC = "M18"; #JD2
+NET "mot_a_o2" LOC = "K15"; #JD8
+NET "mot_a_en" LOC = "N18"; #JD3
+NET "mot_b_o1" LOC = "J15"; #JD9
+NET "mot_b_o2" LOC = "P18"; #JD4
+NET "mot_b_en" LOC = "J14"; #JD10
 
-
+NET "homing_index_0" LOC = "K12"; #JA2
+NET "homing_index_1" LOC = "L16"; #JA8
+NET "enc_1_b" LOC = "L17"; #JA3
+NET "enc_1_a" LOC = "M14"; #JA9
+NET "enc_2_b" LOC = "M15"; #JA4
+NET "enc_2_a" LOC = "M16"; #JA10
 
 ##-------------------- 7 Segment display 
 #NET "An<0>"  	LOC = "F17"  ;
@@ -70,9 +65,13 @@ NET "pwm_tilt_o2"  	LOC = "P18"  ;
 #NET "Btn<2>"  	LOC = "E18"  ;
 #NET "Btn<3>"  	LOC = "H13"  ;
 #
-NET "led<0>"  	LOC = "J14"  ; 
-NET "led<1>"  	LOC = "J15"  ; 
-NET "led<2>"  	LOC = "K15"  ; 
+#NET "led<0>"  	LOC = "J14"  ; 
+#NET "led<1>"  	LOC = "J15"  ; 
+#NET "led<2>"  	LOC = "K15"  ; 
+NET "led<0>" LOC = "R15";
+NET "led<1>" LOC = "M13";
+NET "led<2>" LOC = "R18";
+
 NET "led<3>"  	LOC = "K14"  ; 
 NET "led<4>"  	LOC = "E17"  ; 
 NET "led<5>"  	LOC = "P15"  ; 

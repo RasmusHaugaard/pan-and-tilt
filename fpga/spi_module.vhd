@@ -6,9 +6,11 @@ entity spi_module is
 		clk : in STD_LOGIC;
 		spi_ss_in, spi_clk_in, spi_mosi : in  STD_LOGIC;
 		spi_miso : out STD_LOGIC;
-		enc_tilt_A, enc_tilt_B: in  STD_LOGIC;
-		pwm_tilt_o1, pwm_tilt_o2 : out  STD_LOGIC;
-		
+		homing_index_0, homing_index_1: in STD_LOGIC;
+		enc_1_a, enc_1_b: in STD_LOGIC;
+		enc_2_a, enc_2_b: in STD_LOGIC;
+		mot_a_o1, mot_a_o2, mot_a_en : out  STD_LOGIC;
+		mot_b_o1, mot_b_o2, mot_b_en : out  STD_LOGIC;
 		--DEBUG
 		led  : out STD_LOGIC_VECTOR (7 downto 0)
 	);
@@ -18,11 +20,11 @@ end spi_module;
 architecture Behavioral of spi_module is
 --CONSTANTS
 	constant dummy : std_logic_vector(7 downto 0) := "00000000";
-	--constant pwm_pan_addr : std_logic_vector(5 downto 0) := "000001";
+	constant hb_pwm_pan_addr : std_logic_vector(5 downto 0) := "000001";
 	constant hb_pwm_tilt_addr : std_logic_vector(5 downto 0) := "000010";
-	--constant encoder_pan_addr : std_logic_vector(5 downto 0) := "000011";
+	constant enc_pan_val_addr : std_logic_vector(5 downto 0) := "000011";
 	constant enc_tilt_val_addr : std_logic_vector(5 downto 0) := "000100";
-	--constant homing_pan_addr : std_logic_vector(5 downto 0) := "000101";
+	constant homing_pan_addr : std_logic_vector(5 downto 0) := "000101";
 	constant homing_tilt_addr : std_logic_vector(5 downto 0) := "000110";
 	constant spi_state_read : std_logic := '1';
 	constant spi_state_write : std_logic := '0';
@@ -38,9 +40,15 @@ architecture Behavioral of spi_module is
 	signal spi_pulse : STD_LOGIC;
 	--ENC
 	signal enc_tilt_val : std_logic_vector(7 downto 0):= "00000000";
+	signal enc_pan_val : std_logic_vector(7 downto 0):= "00000000";
 	--PWM
 	signal hb_pwm_tilt_val : std_logic_vector(7 downto 0):= "00000000";
+	signal hb_pwm_pan_val : std_logic_vector(7 downto 0):= "00000000";
 begin 
+
+	mot_a_en <= '1';
+	mot_b_en <= '1';
+	
 	prescaler_1Mhz_ent : entity work.prescaler generic map(prescale_val => 5) port map(
 		clk => clk,
 		clk_scaled => spi_pulse
@@ -48,14 +56,26 @@ begin
 	hb_pwm_tilt: entity work.hb_pwm PORT MAP(
 		clk => clk,
 		dutycycle_signed => hb_pwm_tilt_val,
-		o1 => pwm_tilt_o1,
-		o2 => pwm_tilt_o2
+		o1 => mot_a_o1,
+		o2 => mot_a_o2
+	);
+	hb_pwm_pan: entity work.hb_pwm PORT MAP(
+		clk => clk,
+		dutycycle_signed => hb_pwm_pan_val,
+		o1 => mot_b_o1,
+		o2 => mot_b_o2
 	);
 	enc_tilt_ent: entity work.encoder PORT MAP(
 		clk => clk,
-		Ain => enc_tilt_A,
-		Bin => enc_tilt_B,
+		Ain => enc_1_a,
+		Bin => enc_1_b,
 		val => enc_tilt_val
+	);
+	enc_pan_ent: entity work.encoder PORT MAP(
+		clk => clk,
+		Ain => enc_2_a,
+		Bin => enc_2_b,
+		val => enc_pan_val
 	);
 	
 	process (clk)
@@ -105,9 +125,10 @@ begin
 								else -- request to read from address received
 									spi_state <= spi_state_read;									
 									case spi_shift_in(5 downto 0) is																		 
-										when
-											enc_tilt_val_addr => 
-												spi_shift_out <= enc_tilt_val;
+										when enc_tilt_val_addr => spi_shift_out <= enc_tilt_val;
+										when enc_pan_val_addr => spi_shift_out <= enc_pan_val;
+										when homing_tilt_addr => spi_shift_out <= "0000000" & homing_index_0;
+										when homing_pan_addr => spi_shift_out <= "0000000" & homing_index_1;
 										when others => spi_shift_out <= dummy;
 									end case;
 								end if;
@@ -115,6 +136,7 @@ begin
 						else -- spi_state = spi_state_write
 							case spi_address is
 								when hb_pwm_tilt_addr => hb_pwm_tilt_val <= spi_shift_in;
+								when hb_pwm_pan_addr => hb_pwm_pan_val <= spi_shift_in;
 								when others => NULL;
 							end case;
 							spi_shift_out <= dummy;

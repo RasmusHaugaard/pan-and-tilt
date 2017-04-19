@@ -67,6 +67,7 @@ begin
 				end if;
 			end if;
 		end if;
+	end if;
 end process;
 
 val <= STD_LOGIC_VECTOR(cnt);
