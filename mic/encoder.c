@@ -27,6 +27,7 @@
 #include "spi.h"
 #include "rtcs.h"
 #include "interval.h"
+
 /*****************************    Defines    *******************************/
 #define READ_REG                (1<<7)
 #define FPGA_encoder_pan_reg    (0x03 | READ_REG)
@@ -57,14 +58,14 @@ void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
     switch(my_state)
     {
         case 0:
-            interval = create_interval(millis(10));
+            interval = create_interval(millis(1));
             set_state(1);
             break;
         case 1:
             if (check_interval(interval))
             {
-                spi_write(FPGA_encoder_tilt_reg, update_tilt_encoder);
-                spi_write(DUMMY, NULL);
+                spi_write(FPGA_encoder_tilt_reg, NULL);
+                spi_write(DUMMY, update_tilt_encoder);
             }
             break;
     }
