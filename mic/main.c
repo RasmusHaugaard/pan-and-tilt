@@ -33,6 +33,7 @@
 #include "uart.h"
 #include "spi.h"
 
+#include "controller.h"
 #include "ui.h"
 
 /*****************************    Defines    *******************************/
@@ -76,6 +77,8 @@ int main(void)
   create_task( encoder_task, "ENCODER" );
   create_task( ui_input_task, "UI INPUT" );
   create_task( ui_output_task, "UI OUTPUT" );
+
+  create_task( controller_task, "CONTROLLER" );
 
   schedule();
 }
