@@ -23,15 +23,15 @@
 #include "pid.h"
 /*****************************    Defines    *******************************/
 
-#define TICKS_PR_REV 360
+#define TICKS_PR_REV (360 * 3)
 #define PI           3.14159
 #define RAD_PR_TICK  2 * PI / TICKS_PR_REV
 #define MAX_VOLTAGE  12
-#define delta_t      0.001
+#define delta_t      0.01
 
-FP32 Kp = 14.05;
-FP32 Ki = 16.86;
-FP32 Kd = 4.777;
+FP32 Kp = 40.0;
+FP32 Ki = 16;
+FP32 Kd = 2;
 /*****************************   Constants   *******************************/
 
 /*****************************   Variables   *******************************/
@@ -39,24 +39,35 @@ FP32 Kd = 4.777;
 FP32 prev_error = 0;
 FP32 sum_error = 0;
 
-FP32 pwm;     //-1 to 1
+
+#define AVG_FILTER_SIZE 10
+FP32 delta_error_values[AVG_FILTER_SIZE];
 
 /***************************** Start of Module ******************************/
 INT8S pid_next_pwm(INT16S curr_position, INT16S target)
 {
-    FP32 si_position = curr_position * RAD_PR_TICK;
-    FP32 si_target = target * RAD_PR_TICK;
+    FP32 si_position = curr_position * (FP32)RAD_PR_TICK;
+    FP32 si_target = target * (FP32)RAD_PR_TICK;
 
     FP32 error = si_target - si_position;
     sum_error += error * delta_t;
 
-    pwm = Kp * error;
+    static INT8U avg_filter_i = 0;
+    delta_error_values[avg_filter_i++] = error - prev_error;
+    if (avg_filter_i == AVG_FILTER_SIZE)
+        avg_filter_i = 0;
+    static FP32 filtered_delta_error = 0;
+    for (INT8U i = 0; i < AVG_FILTER_SIZE; i++)
+        filtered_delta_error += delta_error_values[i];
+    filtered_delta_error /= AVG_FILTER_SIZE;
+
+    FP32 pwm = Kp * error;
     pwm += Ki * sum_error;
-    pwm += Kd * (error - prev_error) / delta_t;
+    pwm += Kd * filtered_delta_error / delta_t;
 
     prev_error = error;
 
-    //TODO: Er det for at få det i volt??
+    // Volt -> PWM
     pwm /= MAX_VOLTAGE;
     pwm *= 127;
 
