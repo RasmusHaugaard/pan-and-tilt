@@ -30,7 +30,7 @@
 
 /*****************************    Defines    *******************************/
 #define READ_REG                (1<<7)
-#define FPGA_encoder_pan_reg    (0x03 | READ_REG)
+#define FPGA_encoder_pan_reg    (0x03 | READ_REG)
 #define FPGA_encoder_tilt_reg   (0x04 | READ_REG)
 #define DUMMY 0
 /*****************************   Constants   *******************************/
@@ -40,16 +40,30 @@ INT16S encoder_tilt_data = 0;
 
 /*****************************   Functions   *******************************/
 
+void update_pan_encoder(INT8U spi_data){
+    static INT8S last_data;
+    static BOOLEAN initialized = FALSE;
+    INT8S new_data = (INT8S)spi_data;
+    if (!initialized){
+        last_data = new_data;
+        initialized = TRUE;
+    }
+    INT8S delta = new_data - last_data;
+    encoder_pan_data += delta;
+    last_data = new_data;
+}
+
 void update_tilt_encoder(INT8U spi_data){
     static INT8S last_data;
     static BOOLEAN initialized = FALSE;
     INT8S new_data = (INT8S)spi_data;
-    if (!initialized)
+    if (!initialized){
         last_data = new_data;
+        initialized = TRUE;
+    }
     INT8S delta = new_data - last_data;
     encoder_tilt_data += delta;
     last_data = new_data;
-    //TODO: signal update semaphore to trigger
 }
 
 void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
@@ -64,7 +78,8 @@ void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
         case 1:
             if (check_interval(interval))
             {
-                spi_write(FPGA_encoder_tilt_reg, NULL);
+                spi_write(FPGA_encoder_pan_reg, NULL);
+                spi_write(FPGA_encoder_tilt_reg, update_pan_encoder);
                 spi_write(DUMMY, update_tilt_encoder);
             }
             break;
