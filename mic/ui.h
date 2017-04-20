@@ -17,8 +17,8 @@
 *
 *****************************************************************************/
 
-#ifndef MATLAB_H_
-#define MATLAB_H_
+#ifndef UI_H_
+#define UI_H_
 
 /***************************** Include files *******************************/
 
@@ -27,20 +27,20 @@
 /*****************************   Constants   *******************************/
 
 /*****************************   Functions   *******************************/
-void matlab_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+void ui_input_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 /*****************************************************************************
 *   Input    : -
 *   Output   : -
-*   Function : Send and receive data from MatLab according to the protocol.
+*   Function : Receive and set data
 ******************************************************************************/
-void matlab_encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+void ui_output_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 /*****************************************************************************
 *   Input    : -
 *   Output   : -
-*   Function : Sends encoder data to MatLab every 100 ms (when encoder_on).
+*   Function : Sends encoder data
 ******************************************************************************/
 
 /****************************** End Of Module *******************************/
 
 
-#endif /* MATLAB_H_ */
+#endif

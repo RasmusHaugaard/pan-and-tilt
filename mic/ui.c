@@ -22,11 +22,13 @@
 #include <stdlib.h>
 #include "tm4c123gh6pm.h"
 #include "emp_type.h"
-#include "matlab.h"
 #include "glob_def.h"
 #include "rtcs.h"
 #include "spi.h"
 #include "file.h"
+#include "interval.h"
+#include "ui.h"
+
 /*****************************    Defines    *******************************/
 #define HIGH(x)  ((x) >> 8)
 #define LOW(x)  ((x) & 0xFF)
@@ -96,14 +98,15 @@ void handle_byte(INT8U ch)
     }
 }
 
-void matlab_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
+void ui_input_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 {
     while(file_read(F_UART,&ch))
     {
         handle_byte(ch);
     }
 }
-void matlab_encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
+
+void ui_output_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 {
     static INT8U interval;
 
