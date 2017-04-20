@@ -64,6 +64,7 @@ fptr get_ptr_queue()
     fptr cb = buf[tail++];
     if (tail == QUEUE_SIZE)
         tail = 0;
+    return cb;
 }
 
 void spi_write(INT8U data, fptr cb){
