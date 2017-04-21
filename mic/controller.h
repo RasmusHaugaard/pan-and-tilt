@@ -3,7 +3,13 @@
 
 void controller_task(INT8U, INT8U, INT8U, INT8U);
 
-extern INT8S pan_pwm;
-extern INT8S tilt_pwm;
+void set_pan_setpoint(INT16S setpoint);
+void set_tilt_setpoint(INT16S setpoint);
+
+INT16S get_pan_setpoint();
+INT16S get_tilt_setpoint();
+
+INT8S get_pan_control_variable();
+INT8S get_tilt_control_variable();
 
 #endif
