@@ -1,39 +1,9 @@
-/*****************************************************************************
-* University of Southern Denmark
-* Embedded Programming (EMP)
-*
-* MODULENAME.: fpga.h
-*
-* PROJECT....: Pan-and-tilt
-*
-* DESCRIPTION: FPGA interface.
-*
-* Change Log:
-******************************************************************************
-* Date    Id    Change
-* YYMMDD
-* --------------------
-* 170331  MBJ    Module created.
-*
-*****************************************************************************/
-
 #ifndef ENCODER_H_
 #define ENCODER_H_
 
-/***************************** Include files *******************************/
-
-/*****************************    Defines    *******************************/
-
-/*****************************   Constants   *******************************/
-
-/*****************************   Functions   *******************************/
 void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
-/*****************************************************************************
-*   Input    : -
-*   Output   : -
-*   Function : Collects encoder data from the FPGA.
-******************************************************************************/
 
-/****************************** End Of Module *******************************/
+INT16S get_pan_process_variable();
+INT16S get_tilt_process_variable();
 
-#endif /* ENCODER_H_ */
+#endif
