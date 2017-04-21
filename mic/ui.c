@@ -39,6 +39,11 @@
 #define SET_TARGET_TILT 0x13
 #define ENC_ON          0x01
 #define ENC_OFF         0x02
+#define ACC_TEST_ON     0x03
+#define ACC_TEST_OFF    0x04
+#define ACC_X_RESP      0x30
+#define ACC_Y_RESP      0x31
+#define ACC_Z_RESP      0x32
 #define ENC_PAN_RESP    0x20
 #define ENC_TILT_RESP   0x21
 #define PWM_PAN_RESP    0x22
@@ -60,10 +65,14 @@ enum matlab_states
 extern FILE F_UART;
 /*****************************   Variables   *******************************/
 INT8U ch;
-BOOLEAN encoder_on = 0;
+BOOLEAN encoder_on = FALSE;
+BOOLEAN acc_test_on = FALSE;
 enum matlab_states state = FIRST_BYTE;
 extern INT16S encoder_pan_data;
 extern INT16S encoder_tilt_data;
+extern INT16S acc_x_data;
+extern INT16S acc_y_data;
+extern INT16S acc_z_data;
 extern INT16S pan_target;
 extern INT16S tilt_target;
 extern INT8S pan_pwm;
@@ -93,6 +102,12 @@ void handle_byte(INT8U ch)
                     break;
                 case ENC_OFF:
                     encoder_on = FALSE;
+                    break;
+                case ACC_TEST_ON:
+                    acc_test_on = TRUE;
+                    break;
+                case ACC_TEST_OFF:
+                    acc_test_on = FALSE;
                     break;
                 case PING_REQ:
                     file_write(F_UART, PING_RESP);
@@ -159,19 +174,34 @@ void ui_output_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
              set_state(1);
              break;
          case 1:
-             if (check_interval(interval) && encoder_on)
+             if (check_interval(interval))
              {
-                 file_write(F_UART, ENC_PAN_RESP);
-                 file_write(F_UART, LOW(encoder_pan_data));
-                 file_write(F_UART, HIGH(encoder_pan_data));
-                 file_write(F_UART, ENC_TILT_RESP);
-                 file_write(F_UART, LOW(encoder_tilt_data));
-                 file_write(F_UART, HIGH(encoder_tilt_data));
-                 file_write(F_UART, PWM_PAN_RESP);
-                 file_write(F_UART, pan_pwm);
-                 file_write(F_UART, PWM_TILT_RESP);
-                 file_write(F_UART, tilt_pwm);
-             }
+                 if(encoder_on)
+                 {
+                     file_write(F_UART, ENC_PAN_RESP);
+                     file_write(F_UART, LOW(encoder_pan_data));
+                     file_write(F_UART, HIGH(encoder_pan_data));
+                     file_write(F_UART, ENC_TILT_RESP);
+                     file_write(F_UART, LOW(encoder_tilt_data));
+                     file_write(F_UART, HIGH(encoder_tilt_data));
+                     file_write(F_UART, PWM_PAN_RESP);
+                     file_write(F_UART, pan_pwm);
+                     file_write(F_UART, PWM_TILT_RESP);
+                     file_write(F_UART, tilt_pwm);
+                 }
+                 if(acc_test_on)
+                 {
+                     file_write(F_UART, ACC_X_RESP);
+                     file_write(F_UART, LOW(acc_x_data));
+                     file_write(F_UART, HIGH(acc_x_data));
+                     file_write(F_UART, ACC_Y_RESP);
+                     file_write(F_UART, LOW(acc_y_data));
+                     file_write(F_UART, HIGH(acc_y_data));
+                     file_write(F_UART, ACC_Z_RESP);
+                     file_write(F_UART, LOW(acc_z_data));
+                     file_write(F_UART, HIGH(acc_z_data));
+                 }
+            }
              break;
     }
 }

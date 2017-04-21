@@ -32,7 +32,7 @@
 
 #include "uart.h"
 #include "spi.h"
-
+#include "accelerometer.h"
 #include "controller.h"
 #include "ui.h"
 
@@ -42,7 +42,7 @@
 
 /*****************************   Variables   *******************************/
 FILE F_UART, F_SPI;
-QUEUE Q_UART_TX, Q_UART_RX, Q_SPI_TX, Q_SPI_RX;
+QUEUE Q_UART_TX, Q_UART_RX, Q_SPI_TX, Q_SPI_RX, Q_SSI3_TX, Q_SSI3_RX;
 SEM SEM_STATE_UPDATED;
 /*****************************   Functions   *******************************/
 
@@ -50,10 +50,8 @@ int main(void)
 {
   set_80MHz();
   init_gpio();
-
   uart0_init( 115200, 8, 1, 'n' );
   init_spi();
-
   init_rtcs();
 
   //Queue initialization
@@ -61,6 +59,8 @@ int main(void)
   Q_UART_RX = create_queue();
   Q_SPI_TX = create_queue();
   Q_SPI_RX = create_queue();
+  Q_SSI3_TX = create_queue();
+  Q_SSI3_RX = create_queue();
 
   //File initialization
   F_UART = create_file( uart_get_q, uart_put_q );
@@ -73,11 +73,12 @@ int main(void)
   create_task( uart_rx_task, "UART RX" );
   create_task( spi_tx_task, "SPI TX" );
   create_task( spi_rx_task, "SPI RX" );
-
+  create_task( ssi3_tx_task, "SSI3 TX" );
+  create_task( ssi3_rx_task, "SSI3 RX" );
   create_task( encoder_task, "ENCODER" );
   create_task( ui_input_task, "UI INPUT" );
   create_task( ui_output_task, "UI OUTPUT" );
-
+  create_task( accelerometer_task, "ACCELEROMETER" );
   create_task( controller_task, "CONTROLLER" );
 
   schedule();

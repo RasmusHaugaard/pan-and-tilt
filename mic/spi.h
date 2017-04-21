@@ -54,6 +54,25 @@ void spi_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 *   Output   : -
 *   Function : Receive data from FPGA.
 ******************************************************************************/
+void ssi3_write(INT16U data, fptr cb);
+/*****************************************************************************
+*   Input    : INT8U data, fptr cb
+*   Output   : -
+*   Function : Add data to tx queue and function pointer (callback) to ptr queue.
+*              The callback function will be called with the response data
+******************************************************************************/
+void ssi3_tx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+/*****************************************************************************
+*   Input    : -
+*   Output   : -
+*   Function : Send data to accelerometer.
+******************************************************************************/
+void ssi3_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+/*****************************************************************************
+*   Input    : -
+*   Output   : -
+*   Function : Receive data from accelerometer.
+******************************************************************************/
 /****************************** End Of Module *******************************/
 
 
