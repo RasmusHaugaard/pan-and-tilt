@@ -21,48 +21,66 @@
 #include <stdint.h>
 #include "tm4c123gh6pm.h"
 #include "emp_type.h"
+#include "glob_def.h"
+
+#include "clk.h"
+#include "encoder.h"
 #include "gpio.h"
-#include "tmodel.h"
+#include "systick.h"
 #include "rtcs.h"
+#include "file.h"
+
 #include "uart.h"
 #include "spi.h"
-#include "fpga.h"
-#include "matlab.h"
+
+#include "controller.h"
+#include "ui.h"
 
 /*****************************    Defines    *******************************/
 
 /*****************************   Constants   *******************************/
 
 /*****************************   Variables   *******************************/
-
+FILE F_UART, F_SPI;
+QUEUE Q_UART_TX, Q_UART_RX, Q_SPI_TX, Q_SPI_RX;
+SEM SEM_STATE_UPDATED;
 /*****************************   Functions   *******************************/
 
 int main(void)
 {
+  set_80MHz();
   init_gpio();
-  init_uart0( 115200, 8, 1, 'n' );
+
+  uart0_init( 115200, 8, 1, 'n' );
   init_spi();
+
   init_rtcs();
 
-  open_queue( Q_UART_TX );
-  open_queue( Q_UART_RX );
-  open_queue( Q_SPI_TX );
-  open_queue( Q_SPI_RX );
+  //Queue initialization
+  Q_UART_TX = create_queue();
+  Q_UART_RX = create_queue();
+  Q_SPI_TX = create_queue();
+  Q_SPI_RX = create_queue();
 
-  preset_sem( SEM_SPI_AVAILABLE, 1 );
+  //File initialization
+  F_UART = create_file( uart_get_q, uart_put_q );
 
-  start_task( TASK_UART_TX, uart_tx_task );
-  start_task( TASK_UART_RX, uart_rx_task );
-//start_task( TASK_UI, ui_task );
-  start_task( TASK_MATLAB, matlab_task);
-  start_task( TASK_SPI_TX, spi_tx_task );
-  start_task( TASK_SPI_RX, spi_rx_task );
-  start_task( TASK_ENCODER, encoder_task );
-  start_task( TASK_MATLAB_ENCODER, matlab_encoder_task );
+  //Semaphore initialization
+  SEM_STATE_UPDATED = create_sem();
+
+  //Task initialization
+  create_task( uart_tx_task, "UART TX" );
+  create_task( uart_rx_task, "UART RX" );
+  create_task( spi_tx_task, "SPI TX" );
+  create_task( spi_rx_task, "SPI RX" );
+
+  create_task( encoder_task, "ENCODER" );
+  create_task( ui_input_task, "UI INPUT" );
+  create_task( ui_output_task, "UI OUTPUT" );
+
+  create_task( controller_task, "CONTROLLER" );
 
   schedule();
-
-  return(0);
 }
 
 /****************************** End Of Module *******************************/

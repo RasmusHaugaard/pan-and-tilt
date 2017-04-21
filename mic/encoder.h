@@ -1,39 +1,39 @@
 /*****************************************************************************
 * University of Southern Denmark
-* Embedded C Programming (ECP)
+* Embedded Programming (EMP)
 *
-* MODULENAME.: timer.h
+* MODULENAME.: fpga.h
 *
-* PROJECT....: ECP
+* PROJECT....: Pan-and-tilt
 *
-* DESCRIPTION: Test.
+* DESCRIPTION: FPGA interface.
 *
 * Change Log:
 ******************************************************************************
 * Date    Id    Change
 * YYMMDD
 * --------------------
-* 090215  MoH    Module created.
+* 170331  MBJ    Module created.
 *
 *****************************************************************************/
 
-#ifndef SWTIMERS_H_
-#define SWTIMERS_H_
+#ifndef ENCODER_H_
+#define ENCODER_H_
 
 /***************************** Include files *******************************/
 
 /*****************************    Defines    *******************************/
-#define TIM_10_MSEC     10
-#define TIM_100_MSEC   100
-#define TIM_200_MSEC   200
-#define TIM_500_MSEC   500
-#define TIM_1_SEC     1000
-#define TIM_2_SEC     2000
 
 /*****************************   Constants   *******************************/
 
 /*****************************   Functions   *******************************/
-
+void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+/*****************************************************************************
+*   Input    : -
+*   Output   : -
+*   Function : Collects encoder data from the FPGA.
+******************************************************************************/
 
 /****************************** End Of Module *******************************/
-#endif /*SWTIMERS_H_*/
+
+#endif /* ENCODER_H_ */

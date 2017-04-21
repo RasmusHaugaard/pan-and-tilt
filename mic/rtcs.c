@@ -1,329 +1,274 @@
-/*****************************************************************************
-* University of Southern Denmark
-* Embedded Programming (EMP)
-*
-* MODULENAME.: rtcs.c
-*
-* PROJECT....: EMP
-*
-* DESCRIPTION: See module specification file (.h-file).
-*
-* Change Log:
-*****************************************************************************
-* Date    Id    Change
-* YYMMDD
-* --------------------
-* 150303  MoH   Module created.
-*
-*****************************************************************************/
-
-/***************************** Include files *******************************/
 #include <stdint.h>
+#include <math.h>
+
 #include "tm4c123gh6pm.h"
 #include "emp_type.h"
-#include "swtimers.h"
 #include "glob_def.h"
 #include "rtcs.h"
 #include "systick.h"
+#include "string.h"
 
-/*****************************    Defines    *******************************/
-
-typedef struct
-{
-  INT8U  condition;
-  INT8U  name;
-  INT8U  state;
-  INT8U  event;
-  INT8U  sem;
-  INT16U timer;
-  void (*tf)(INT8U, INT8U, INT8U, INT8U);  // Pointer to task function
-} tcb;
+#define TASK_NAME_LENGTH 10
 
 typedef struct
 {
-  INT8U  condition;
-  INT8U  type;
-  INT8U  count;
-}scb;
+    INT8U condition;
+    char name[TASK_NAME_LENGTH];
+    INT8U state;
+    INT8U event;
+    SEM sem;
+    INT16U timer;
+    void (*tf)(INT8U, INT8U, INT8U, INT8U);  // Pointer to task function
+} tcb; //task control block
 
 typedef struct
 {
-	INT8U	head;
-	INT8U	tail;
-	SEM     q_not_full;
-	SEM     q_not_empty;
-	INT8U buf[QUEUE_SIZE];
-}qcb;
+    INT8U condition;
+    INT8U type;
+    INT8U count;
+} scb; //semaphore control block
 
-/*****************************   Constants   *******************************/
-
-/*****************************   Variables   *******************************/
-extern volatile INT16S ticks;
-
-HANDLE current_task;
-
-tcb pot[MAX_TASKS];	            // Pool of tasks
-scb pos[MAX_SEMAPHORES];        // Pool of semaphores
-qcb poq[MAX_QUEUES];            // Pool of queues
-
-/*****************************   Functions   *******************************/
-
-HANDLE retrieve_id(void)
-/*****************************************************************************
-*   Input    :
-*   Output   :
-*   Function :
-******************************************************************************/
+typedef struct
 {
-  static HANDLE next_id = 0;
+    INT8U head;
+    INT8U tail;
+    SEM q_not_full;
+    SEM q_not_empty;
+    INT8U buf[QUEUE_SIZE];
+} qcb; //queue control block
 
-  return( next_id++ );
+extern volatile INT16U ticks;
+
+INT16U ms, us, glob_ticks;
+
+INT16U now_millis()
+{
+    return ms;
 }
 
-void i_am_alive( INT8U my_id, INT8U my_state, INT8U event, INT8U data )
-/*****************************************************************************
-*   Input    :
-*   Output   :
-*   Function :
-******************************************************************************/
+INT16U now_micros()
 {
-  if( my_state == 0 )
-  {
-    // Turn on the LED.
-    GPIO_PORTD_DATA_R |= 0x40;
-    set_state( 1 );
-  }
-  else
-  {
-    // Turn off the LED.
-    GPIO_PORTD_DATA_R &= ~(0x40);
-    set_state( 0 );
-  }
-  wait( TIM_1_SEC );
+    return us;
 }
 
-extern void set_state( INT8U new_state )
-/*****************************************************************************
-*   Function : See module specification (.h-file).
-*****************************************************************************/
+INT16U now_ticks()
 {
-  pot[current_task].state = new_state;
+    return glob_ticks;
 }
 
-extern void wait( INT16U timeout )
-/*****************************************************************************
-*   Function : See module specification (.h-file).
-*****************************************************************************/
+INT16U millis(INT16U _millis)
 {
-  pot[current_task].timer     = timeout;
-  pot[current_task].condition = TASK_WAIT_FOR_TIMEOUT;
+    return ceil(_millis * ((float) SYS_FREQ / 1000.0));
 }
 
-extern BOOLEAN wait_sem( INT8U sem, INT16U timeout )
-/*****************************************************************************
-*   Function : See module specification (.h-file).
-*****************************************************************************/
+INT16U micros(INT16U _micros)
 {
-  BOOLEAN result = TRUE;
+    return ceil(_micros * ((float) SYS_FREQ / 1000000.0));
+}
 
-  if( pos[sem].count )
-  {
-	pos[sem].count--;
-    pot[current_task].condition = TASK_READY;
-	result = TRUE;
-  }
-  else
-  {
-    pot[current_task].sem       = sem;
-    pot[current_task].condition = TASK_WAIT_FOR_SEMAPHORE;
-    if( timeout )
+TASK current_task;
+
+tcb pot[MAX_TASKS]; // Pool of tasks
+scb pos[MAX_SEMAPHORES]; // Pool of semaphores
+qcb poq[MAX_QUEUES]; // Pool of queues
+
+void i_am_alive(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
+{
+    if (my_state == 0)
     {
-	  pot[current_task].timer     = timeout;
-	  pot[current_task].condition |= TASK_WAIT_FOR_TIMEOUT;
+        // Turn on the LED.
+        GPIO_PORTD_DATA_R |= 0x40;
+        set_state(1);
     }
-    result = FALSE;
-  }
-  return( result );
-}
-
-extern void signal( INT8U sem )
-/*****************************************************************************
-*   Function : See module specification (.h-file).
-*****************************************************************************/
-{
-  if( sem < MAX_SEMAPHORES )
-	pos[sem].count++;
-}
-
-extern void preset_sem( INT8U sem, INT8U signals )
-/*****************************************************************************
-*   Function : See module specification (.h-file).
-*****************************************************************************/
-{
-  if( sem < MAX_SEMAPHORES )
-    pos[sem].count = signals;
-}
-
-INT8S open_queue( id )
-INT8U id;
-/*****************************************************************************
-*   Function : See module specification (.h-file).
-*****************************************************************************/
-{
-  INT8S result;
-
-	if( id < MAX_QUEUES )
-	{
-	  poq[id].head        = 0;
-      poq[id].tail        = 0;
-      poq[id].q_not_full  = id;
-      poq[id].q_not_empty = MAX_QUEUES + id;
-      preset_sem( poq[id].q_not_full, QUEUE_SIZE );
-      result = id;
-	}
-	else
-	  result = -1;
-	return( result );
-}
-
-BOOLEAN put_queue( id, ch, timeout )
-INT8U  id;
-INT8U  ch;
-INT16U timeout;
-/*****************************************************************************
-*   Function : See module specification (.h-file).
-*****************************************************************************/
-{
-  BOOLEAN result = FALSE;
-
-  if( id < MAX_QUEUES )
-  {
-	if( wait_sem( poq[id].q_not_full, timeout ))
+    else
     {
-      poq[id].buf[poq[id].head++] = ch;
-      poq[id].head &= 0x7F;
-      signal( poq[id].q_not_empty );
-      result = TRUE;
+        // Turn off the LED.
+        GPIO_PORTD_DATA_R &= ~(0x40);
+        set_state(0);
     }
-  }
-  return( result );
+    wait(millis(500));
 }
 
-BOOLEAN get_queue( id, pch, timeout )
-INT8U  id;
-INT8U *pch;
-INT16U timeout;
-/*****************************************************************************
-*   Function : See module specification (.h-file).
-*****************************************************************************/
+void set_state(INT8U new_state)
 {
-  BOOLEAN result = FALSE;
+    pot[current_task].state = new_state;
+}
 
-  if( id < MAX_QUEUES )
-  {
-	if( wait_sem( poq[id].q_not_empty, timeout ))
+void wait(INT16U timeout)
+{
+    pot[current_task].timer = timeout;
+    pot[current_task].condition = TASK_WAIT_FOR_TIMEOUT;
+}
+
+SEM create_sem()
+{
+    static SEM next_id = 2 * MAX_QUEUES;
+    SEM id = next_id++;
+    return id;
+}
+
+void preset_sem(SEM sem, INT8U signals)
+{
+    if (sem < MAX_SEMAPHORES)
+        pos[sem].count = signals;
+}
+
+void signal(SEM sem)
+{
+    if (sem < MAX_SEMAPHORES)
+        pos[sem].count++;
+}
+
+BOOLEAN wait_sem(SEM sem, INT16U timeout)
+{
+    BOOLEAN result = TRUE;
+    if (pos[sem].count)
     {
-      *pch = poq[id].buf[poq[id].tail++];
-      poq[id].tail &= 0x7F;
-      signal( poq[id].q_not_full );
-      result = TRUE;
+        pos[sem].count--;
+        pot[current_task].condition = TASK_READY;
+        result = TRUE;
     }
-  }
-  return( result );
+    else
+    {
+        pot[current_task].sem = sem;
+        pot[current_task].condition = TASK_WAIT_FOR_SEMAPHORE;
+        if (timeout)
+        {
+            pot[current_task].timer = timeout;
+            pot[current_task].condition |= TASK_WAIT_FOR_TIMEOUT;
+        }
+        result = FALSE;
+    }
+    return result;
 }
 
-
-
-
-extern HANDLE start_task( INT8U name, void (*tf)(INT8U, INT8U, INT8U, INT8U) )
-/*****************************************************************************
-*   Function : See module specification (.h-file).
-*****************************************************************************/
+QUEUE create_queue()
 {
-  HANDLE this_id;
-
-  this_id = retrieve_id();
-  if( this_id != ERROR_TASK )
-  {
-	//pot[this_id].id    = this_id;
-	pot[this_id].condition = TASK_READY;
-	pot[this_id].name      = name;
-	pot[this_id].state     = 0;
-	pot[this_id].event     = EVENT_RESET;
-	pot[this_id].timer     = 0;
-	pot[this_id].tf        = tf;
-  }
-  return( 0 );
+    static QUEUE next_id = 0;
+    QUEUE id = next_id++;
+    if (id < MAX_QUEUES)
+    {
+        poq[id].head = 0;
+        poq[id].tail = 0;
+        poq[id].q_not_full = id;
+        poq[id].q_not_empty = MAX_QUEUES + id;
+        preset_sem(poq[id].q_not_full, QUEUE_SIZE);
+    }
+    return id;
 }
 
-extern INT8U init_rtcs()
+BOOLEAN put_queue(INT8U id, INT8U ch, INT16U timeout)
 {
-  INT8U i;
+    BOOLEAN result = FALSE;
+    if (id < MAX_QUEUES)
+    {
+        if (wait_sem(poq[id].q_not_full, timeout))
+        {
+            poq[id].buf[poq[id].head++] = ch;
+            poq[id].head &= 0x7F;
+            signal(poq[id].q_not_empty);
+            result = TRUE;
+        }
+    }
+    return result;
+}
 
-  init_systick();
-  for( i = 0; i < MAX_TASKS; i++ )
-  {
-	pot[i].condition = TASK_IDLE;
-  }
-  start_task( SYS_TASK+1, i_am_alive );
-  return( 1 );
+BOOLEAN get_queue(QUEUE id, INT8U* pch, INT16U timeout)
+{
+    BOOLEAN result = FALSE;
+    if (id < MAX_QUEUES)
+    {
+        if (wait_sem(poq[id].q_not_empty, timeout))
+        {
+            *pch = poq[id].buf[poq[id].tail++];
+            poq[id].tail &= 0x7F;
+            signal(poq[id].q_not_full);
+            result = TRUE;
+        }
+    }
+    return result;
+}
+
+void init_rtcs()
+{
+    for (INT8U i = 0; i < MAX_TASKS; i++)
+        pot[i].condition = NO_TASK;
+    create_task(i_am_alive, "IM ALIVE");
+}
+
+TASK create_task(void (*tf)(INT8U, INT8U, INT8U, INT8U), char* name)
+{
+    static TASK next_id = 0;
+    TASK id = next_id++;
+
+    if (id != ERROR_TASK)
+    {
+        pot[id].condition = TASK_READY;
+        strncpy(pot[id].name, name, TASK_NAME_LENGTH);
+        pot[id].state = 0;
+        pot[id].timer = 0;
+        pot[id].tf = tf;
+    }
+    return id;
 }
 
 void schedule()
-/*****************************************************************************
-*   Function : See module specification (.h-file).
-*****************************************************************************/
 {
-
-  while(1)
-  {
-    while( !ticks );
-    ticks--;
-    current_task = 0;
-    do
+    init_systick();
+    while (TRUE)
     {
-      if( pot[current_task].condition & TASK_WAIT_FOR_SEMAPHORE )
-      {
-        if( pos[pot[current_task].sem].count )
+        INT16U dticks = ticks;
+        //atomic decrementation
+        disable_global_int();
+        ticks -= dticks;
+        enable_global_int();
+
+        glob_ticks += dticks;
+
+        static INT16U dt_ms_rest, dt_us_rest;
+        dt_ms_rest += dticks;
+        dt_us_rest += dticks;
+        INT16U dms = ((INT32U) dt_ms_rest * 1000) / SYS_FREQ;
+        INT16U dus = ((INT32U) dt_us_rest * 1000000) / SYS_FREQ;
+
+        dt_ms_rest -= ((INT32U) dms * SYS_FREQ) / 1000;
+        dt_us_rest -= ((INT32U) dus * SYS_FREQ) / 1000000;
+        ms += dms;
+        us += dus;
+
+        current_task = 0;
+        while (pot[current_task].condition != NO_TASK)
         {
-          if( !( pot[current_task].sem < (2 * MAX_QUEUES )))
-              pos[pot[current_task].sem].count--;
-          pot[current_task].event     = EVENT_SIGNAL;
-          pot[current_task].condition = TASK_READY;
+            if (pot[current_task].condition & TASK_WAIT_FOR_SEMAPHORE)
+            {
+                if (pos[pot[current_task].sem].count)
+                {
+                    if (pot[current_task].sem >= 2 * MAX_QUEUES)
+                        pos[pot[current_task].sem].count--;
+                    pot[current_task].event = EVENT_SIGNAL;
+                    pot[current_task].condition = TASK_READY;
+                }
+            }
+            if (pot[current_task].condition & TASK_WAIT_FOR_TIMEOUT)
+            {
+                if (pot[current_task].timer)
+                {
+                    if (pot[current_task].timer <= dticks)
+                    {
+                        pot[current_task].timer = 0;
+                        pot[current_task].event = EVENT_TIMEOUT;
+                        pot[current_task].condition = TASK_READY;
+                    }
+                    else
+                    {
+                        pot[current_task].timer -= dticks;
+                    }
+                }
+            }
+            if (pot[current_task].condition == TASK_READY)
+                pot[current_task].tf(current_task, pot[current_task].state,
+                                     pot[current_task].event, 0);
+            current_task++;
         }
-      }
-      if( pot[current_task].condition & TASK_WAIT_FOR_TIMEOUT )
-      {
-    	if( pot[current_task].timer )
-    	{
-          pot[current_task].timer--;
-  	      if( pot[current_task].timer == 0 )
-  	      {
-    	    pot[current_task].event     = EVENT_TIMEOUT;
-    	    pot[current_task].condition = TASK_READY;
-  	      }
-    	}
-      }
-
-      if( pot[current_task].condition == TASK_READY )
-      {
-          pot[current_task].tf(current_task, pot[current_task].state, pot[current_task].event, 0);
-          pot[current_task].event = EVENT_NONE;
-      }
-   	  current_task++;
-	} while ( pot[current_task].condition != TASK_IDLE );
-  }
+    }
 }
-/****************************** End Of Module *******************************/
-
-
-
-
-
-
-
-
-
-
-
-
