@@ -20,8 +20,9 @@
 #define SET_TARGET_PAN  0x12
 #define SET_TARGET_TILT 0x13
 
-#define ENC_ON          0x01
-#define ENC_OFF         0x02
+#define DATA_LOG_ON     0x01
+#define DATA_LOG_OFF    0x02
+#define ACCELEROMETER_ON 0x03
 
 #define ENC_PAN_RESP    0x20
 #define ENC_TILT_RESP   0x21
@@ -48,7 +49,7 @@ enum ui_states
 extern FILE F_UART;
 /*****************************   Variables   *******************************/
 INT8U ch;
-BOOLEAN encoder_on = 0;
+BOOLEAN data_logging_on = 0;
 enum ui_states state = FIRST_BYTE;
 
 /*****************************   Functions   *******************************/
@@ -71,11 +72,16 @@ void handle_byte(INT8U ch)
                 case SET_TARGET_TILT:
                     state = TARGET_TILT;
                     break;
-                case ENC_ON:
-                    encoder_on = TRUE;
+                case ACCELEROMETER_ON:
+                    //TODO: when accelerometer is implemented
+                    //enable_accelerometer();
+                    //enable_controller();
                     break;
-                case ENC_OFF:
-                    encoder_on = FALSE;
+                case DATA_LOG_ON:
+                    data_logging_on = TRUE;
+                    break;
+                case DATA_LOG_OFF:
+                    data_logging_on = FALSE;
                     break;
                 case PING_REQ:
                     file_write(F_UART, PING_RESP);
@@ -83,13 +89,13 @@ void handle_byte(INT8U ch)
             }
             break;
         case PWM_PAN:
-            spi_write(FPGA_PWM_pan_reg, NULL);
-            spi_write(ch, NULL);
+            disable_controller();
+            set_pan_control_variable(ch);
             state = FIRST_BYTE;
             break;
         case PWM_TILT:
-            spi_write(FPGA_PWM_tilt_reg, NULL);
-            spi_write(ch, NULL);
+            disable_controller();
+            set_tilt_control_variable(ch);
             state = FIRST_BYTE;
             break;
         case TARGET_PAN:
@@ -101,7 +107,9 @@ void handle_byte(INT8U ch)
                 i++;
             }else{
                 i = 0;
+                //disable_accelerometer(); //TODO: when accelerometer is implemented
                 set_pan_setpoint((ch << 8) | low_byte);
+                enable_controller();
                 state = FIRST_BYTE;
             }
             break;
@@ -115,7 +123,9 @@ void handle_byte(INT8U ch)
                 i++;
             }else{
                 i = 0;
+                //disable_accelerometer(); //TODO: when accelerometer is implemented
                 set_tilt_setpoint((ch << 8) | low_byte);
+                enable_controller();
                 state = FIRST_BYTE;
             }
             break;
@@ -151,7 +161,7 @@ void log_pan_control_variable()
     file_write(F_UART, get_pan_control_variable());
 }
 
-void log_tilt_pwm()
+void log_tilt_control_variable()
 {
     file_write(F_UART, PWM_TILT_RESP);
     file_write(F_UART, get_tilt_control_variable());
@@ -182,12 +192,12 @@ void ui_output_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
              set_state(1);
              break;
          case 1:
-             if (check_interval(interval) && encoder_on)
+             if (check_interval(interval) && data_logging_on)
              {
                  log_pan_setpoint();
                  log_tilt_setpoint();
                  log_pan_control_variable();
-                 log_tilt_pwm();
+                 log_tilt_control_variable();
                  log_pan_process_variable();
                  log_tilt_process_variable();
              }
