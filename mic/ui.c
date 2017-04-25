@@ -104,7 +104,7 @@ void handle_byte(INT8U ch)
                     encoder_on = FALSE;
                     break;
                 case ACC_TEST_ON:
-                    acc_test_on = TRUE;
+                    acc_test_on = FALSE;
                     break;
                 case ACC_TEST_OFF:
                     acc_test_on = FALSE;

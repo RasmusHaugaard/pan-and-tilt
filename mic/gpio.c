@@ -39,16 +39,15 @@ void init_gpio(void)
 {
     SYSCTL_RCGC2_R = SYSCTL_RCGC2_GPIOA | SYSCTL_RCGC2_GPIOB | SYSCTL_RCGC2_GPIOC | SYSCTL_RCGC2_GPIOD | SYSCTL_RCGC2_GPIOF;
     SYSCTL_RCGC1_R |= 0x00000001;
-    // Enable the GPIO pin for the LED (PF3).  Set the direction as output, and
-    // enable the GPIO pin for digital function.
+
     GPIO_PORTC_DIR_R = 0xF0;
     GPIO_PORTC_DEN_R = 0xF0;
 
     GPIO_PORTD_DIR_R = 0x4C;
     GPIO_PORTD_DEN_R = 0x4C;
 
-    GPIO_PORTF_DIR_R = 0x0E;
-    GPIO_PORTF_DEN_R = 0x1F;
+    //GPIO_PORTF_DIR_R = 0x0E;
+   // GPIO_PORTF_DEN_R = 0x1F;
 }
 
 /****************************** End Of Module *******************************/
