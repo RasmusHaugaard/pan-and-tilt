@@ -10,7 +10,7 @@
 #define FPGA_PWM_pan_reg        0x01
 #define FPGA_PWM_tilt_reg       0x02
 
-BOOLEAN enabled = FALSE;
+BOOLEAN controller_enable = FALSE;
 INT16S pan_setpoint = 0;
 INT16S tilt_setpoint = 0;
 INT8S pan_control_variable = 0;
@@ -18,12 +18,12 @@ INT8S tilt_control_variable = 0;
 
 void enable_controller()
 {
-    enabled = TRUE;
+    controller_enable = TRUE;
 }
 
 void disable_controller()
 {
-    enabled = FALSE;
+    controller_enable = FALSE;
 }
 
 void set_pan_setpoint(INT16S setpoint)
@@ -85,7 +85,7 @@ void controller_task(INT8U id, INT8U state, INT8U event, INT8U data)
         set_state(1);
         break;
     case 1:
-        if (check_interval(interval) && enabled)
+        if (check_interval(interval) && controller_enable)
         {
             set_pan_control_variable(
                 voltage_to_dutycycle(
