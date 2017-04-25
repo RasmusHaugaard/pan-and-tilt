@@ -7,12 +7,14 @@
 #include "pan_tilt_config.h"
 #include "spi.h"
 #include "rtcs.h"
+#include "file.h"
 
-#define HOMING_PAN_PWM 80
-#define HOMING_TILT_PWM 80
+#define HOMING_PAN_PWM 60
+#define HOMING_TILT_PWM 60
 
-#define PAN_MIN_SPEED 10
+#define PAN_MIN_SPEED 5
 
+extern FILE F_UART;
 BOOLEAN homing_enable = FALSE;
 
 void home()
@@ -24,21 +26,21 @@ enum states{
     INIT,
     OFF,
     HOMING,
+    WAITING_FOR_CONTROLLER,
 };
 
 BOOLEAN pan_homed;
 BOOLEAN tilt_homed;
 
 INT16S last_pan_process_value;
-
-INT8U i = 0;
+INT8U pan_pv_update_index;
 
 void handle_pan_index(INT8U hall_data)
 {
     if (pan_homed)
         return;
 
-    if (hall_data)
+    if (!hall_data)
     {
         reset_pan_process_variable();
         set_pan_control_variable(0);
@@ -46,9 +48,9 @@ void handle_pan_index(INT8U hall_data)
     }
     else
     {
-        i++;
-        i %= 10;
-        if (i == 9)
+        pan_pv_update_index++;
+        pan_pv_update_index %= 20;
+        if (pan_pv_update_index == 19)
         {
             INT16S pv = get_pan_process_variable();
             INT16S delta = pv - last_pan_process_value;
@@ -62,9 +64,9 @@ void handle_pan_index(INT8U hall_data)
     }
 }
 
-void handle_tilt_index(INT8U data)
+void handle_tilt_index(INT8U hall_data)
 {
-    if (data && !tilt_homed)
+    if (!hall_data && !tilt_homed)
     {
         reset_tilt_process_variable();
         set_tilt_control_variable(0);
@@ -87,10 +89,12 @@ void homing_task(INT8U my_id, INT8U state, INT8U event, INT8U data)
             disable_controller();
             pan_homed = FALSE;
             last_pan_process_value = get_pan_process_variable();
+            pan_pv_update_index = 0;
             tilt_homed = FALSE;
             set_pan_control_variable(HOMING_PAN_PWM);
             set_tilt_control_variable(HOMING_TILT_PWM);
             set_state(HOMING);
+            reset_interval(interval);
         }
         break;
     case HOMING:
@@ -108,12 +112,18 @@ void homing_task(INT8U my_id, INT8U state, INT8U event, INT8U data)
             }
             if (tilt_homed && pan_homed)
             {
-                set_state(OFF);
+                set_state(WAITING_FOR_CONTROLLER);
                 set_pan_setpoint(0);
                 set_tilt_setpoint(0);
                 enable_controller();
+                wait(millis(1000));
             }
         }
+        break;
+    case WAITING_FOR_CONTROLLER:
+        file_write(F_UART, HOMING_COMPLETE_RESP);
+        disable_controller();
+        set_state(OFF);
         break;
     }
 }
