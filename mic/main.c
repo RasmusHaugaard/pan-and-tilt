@@ -82,8 +82,6 @@ int main(void)
   create_task( controller_task, "CONTROLLER" );
   create_task( homing_task, "HOMING" );
 
-  home();
-
   schedule();
 }
 
