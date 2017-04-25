@@ -23,7 +23,11 @@ void enable_controller()
 
 void disable_controller()
 {
-    controller_enable = FALSE;
+    if (controller_enable){
+        controller_enable = FALSE;
+        set_pan_control_variable(0);
+        set_tilt_control_variable(0);
+    }
 }
 
 void set_pan_setpoint(INT16S setpoint)
@@ -81,7 +85,9 @@ void controller_task(INT8U id, INT8U state, INT8U event, INT8U data)
     case 0:
         interval = create_interval(millis(10));
         pid_tilt = create_pid(40, 0, 0, 0.01);
-        pid_pan = create_pid(0, 0, 0, 0.01);
+        pid_pan = create_pid(40, 0, 0, 0.01);
+        set_pan_control_variable(0);
+        set_tilt_control_variable(0);
         set_state(1);
         break;
     case 1:
