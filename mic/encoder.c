@@ -30,6 +30,16 @@ INT16S get_tilt_process_variable()
     return tilt_process_variable;
 }
 
+void reset_pan_process_variable()
+{
+    pan_process_variable = 0;
+}
+
+void reset_tilt_process_variable()
+{
+    tilt_process_variable = 0;
+}
+
 void update_pan_encoder(INT8U spi_data){
     static INT8S last_data;
     static BOOLEAN initialized = FALSE;
