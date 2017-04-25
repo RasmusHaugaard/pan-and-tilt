@@ -10,32 +10,12 @@
 #include "ui.h"
 #include "controller.h"
 #include "encoder.h"
+#include "homing.h"
+#include "pan_tilt_config.h"
 
 /*****************************    Defines    *******************************/
 #define HIGH(x)  ((x) >> 8)
 #define LOW(x)  ((x) & 0xFF)
-
-#define SET_PWM_PAN     0x10
-#define SET_PWM_TILT    0x11
-#define SET_TARGET_PAN  0x12
-#define SET_TARGET_TILT 0x13
-
-#define DATA_LOG_ON     0x01
-#define DATA_LOG_OFF    0x02
-#define ACCELEROMETER_ON 0x03
-
-#define ENC_PAN_RESP    0x20
-#define ENC_TILT_RESP   0x21
-#define PWM_PAN_RESP    0x22
-#define PWM_TILT_RESP   0x23
-#define PAN_SETPOINT_RESP 0x24
-#define TILT_SETPOINT_RESP 0x25
-
-#define PING_REQ        0xF0
-#define PING_RESP       0xF1
-
-#define FPGA_PWM_pan_reg        0x01
-#define FPGA_PWM_tilt_reg       0x02
 
 enum ui_states
 {
@@ -60,6 +40,9 @@ void handle_byte(INT8U ch)
         case FIRST_BYTE:
             switch (ch)
             {
+                case START_HOMING:
+                    home();
+                    break;
                 case SET_PWM_PAN:
                     state = PWM_PAN;
                     break;

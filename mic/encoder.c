@@ -8,12 +8,9 @@
 #include "spi.h"
 #include "rtcs.h"
 #include "interval.h"
+#include "pan_tilt_config.h"
 
 /*****************************    Defines    *******************************/
-#define READ_REG                (1<<7)
-#define FPGA_encoder_pan_reg    (0x03 | READ_REG)
-#define FPGA_encoder_tilt_reg   (0x04 | READ_REG)
-#define DUMMY 0
 
 /*****************************   Variables   *******************************/
 INT16S pan_process_variable = 0;
