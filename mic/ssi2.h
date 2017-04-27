@@ -17,8 +17,8 @@
 *
 *****************************************************************************/
 
-#ifndef SPI_H_
-#define SPI_H_
+#ifndef SSI2_H_
+#define SSI2_H_
 
 /***************************** Include files *******************************/
 
@@ -28,27 +28,27 @@ typedef void (*fptr)(INT8U);
 /*****************************   Constants   *******************************/
 
 /*****************************   Functions   *******************************/
-void init_spi();
+void init_ssi2();
 /*****************************************************************************
 *   Input    : -
 *   Output   : -
 *   Function : Initialize SPI on port B.
 ******************************************************************************/
 
-void spi_write(INT8U data, fptr cb);
+void ssi2_write(INT8U data, fptr cb);
 /*****************************************************************************
 *   Input    : INT8U data, fptr cb
 *   Output   : -
 *   Function : Add data to tx queue and function pointer (callback) to ptr queue.
 *              The callback function will be called with the response data
 ******************************************************************************/
-void spi_tx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+void ssi2_tx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 /*****************************************************************************
 *   Input    : -
 *   Output   : -
 *   Function : Send data to FPGA.
 ******************************************************************************/
-void spi_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+void ssi2_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 /*****************************************************************************
 *   Input    : -
 *   Output   : -
@@ -56,4 +56,4 @@ void spi_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 ******************************************************************************/
 
 
-#endif /* SPI_H_ */
+#endif /* SSI2_H_ */

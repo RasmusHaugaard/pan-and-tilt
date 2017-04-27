@@ -24,7 +24,7 @@
 #include "emp_type.h"
 #include "glob_def.h"
 #include "encoder.h"
-#include "spi.h"
+#include "ssi2.h"
 #include "rtcs.h"
 #include "interval.h"
 
@@ -78,9 +78,9 @@ void encoder_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
         case 1:
             if (check_interval(interval))
             {
-                spi_write(FPGA_encoder_pan_reg, NULL);
-                spi_write(FPGA_encoder_tilt_reg, update_pan_encoder);
-                spi_write(DUMMY, update_tilt_encoder);
+                ssi2_write(FPGA_encoder_pan_reg, NULL);
+                ssi2_write(FPGA_encoder_tilt_reg, update_pan_encoder);
+                ssi2_write(DUMMY, update_tilt_encoder);
             }
             break;
     }

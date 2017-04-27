@@ -2,7 +2,7 @@
 #include "controller.h"
 #include "rtcs.h"
 #include "interval.h"
-#include "spi.h"
+#include "ssi2.h"
 #include "pid.h"
 
 extern INT16S encoder_pan_data;
@@ -30,8 +30,8 @@ void controller_task(INT8U id, INT8U state, INT8U event, INT8U data)
             if (check_interval(interval))
             {
                 tilt_pwm = pid_next_pwm(encoder_tilt_data, tilt_target);
-                spi_write(FPGA_PWM_tilt_reg, NULL);
-                spi_write(tilt_pwm, NULL);
+                ssi2_write(FPGA_PWM_tilt_reg, NULL);
+                ssi2_write(tilt_pwm, NULL);
             }
             break;
         }

@@ -17,8 +17,8 @@
 *
 *****************************************************************************/
 
-#ifndef SSI1_H_
-#define SSI1_H_
+#ifndef SSI0_H_
+#define SSI0_H_
 
 /***************************** Include files *******************************/
 
@@ -28,7 +28,7 @@ typedef void (*fptr)(INT8U);
 /*****************************   Constants   *******************************/
 
 /*****************************   Functions   *******************************/
-void init_ssi1();
+void init_ssi0();
 /*****************************************************************************
 *   Input    : -
 *   Output   : -
@@ -36,20 +36,20 @@ void init_ssi1();
 ******************************************************************************/
 
 
-void ssi1_write(INT8U data, fptr cb);
+void ssi0_write(INT8U data, fptr cb);
 /*****************************************************************************
 *   Input    : INT8U data, fptr cb
 *   Output   : -
 *   Function : Add data to tx queue and function pointer (callback) to ptr queue.
 *              The callback function will be called with the response data
 ******************************************************************************/
-void ssi1_tx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+void ssi0_tx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 /*****************************************************************************
 *   Input    : -
 *   Output   : -
 *   Function : Send data to accelerometer.
 ******************************************************************************/
-void ssi1_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
+void ssi0_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 /*****************************************************************************
 *   Input    : -
 *   Output   : -
@@ -58,4 +58,4 @@ void ssi1_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 /****************************** End Of Module *******************************/
 
 
-#endif /* SSI1_H_ */
+#endif /* SSI0_H_ */

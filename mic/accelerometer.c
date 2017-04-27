@@ -23,7 +23,7 @@
 #include "glob_def.h"
 #include "accelerometer.h"
 #include "rtcs.h"
-#include "ssi1.h"
+#include "ssi0.h"
 #include "file.h"
 #include "interval.h"
 /*****************************    Defines    *******************************/
@@ -62,93 +62,88 @@ volatile BOOLEAN acc_data_ready;
 void init_accelerometer()
 {
     // Default output data rate: 100 Hz
-    ssi1_write(POWER_CTL, NULL);
-    ssi1_write(0, NULL);        // Wakeup
-    ssi1_write(POWER_CTL, NULL);
-    ssi1_write(0x08, NULL);     // Start measurement
-    ssi1_write(DATA_FORMAT, NULL);
-    ssi1_write(0x0B, NULL);     // ±16g, FULL_RES mode
+    ssi0_write(POWER_CTL, NULL);
+    ssi0_write(0, NULL);        // Wakeup
 
-//    ssi1_write(INT_ENABLE, NULL);
-//    ssi1_write(0x80, NULL);     // Enable DATA_READY interrupt
+    ssi0_write(DATA_FORMAT, NULL);
+    ssi0_write(0x0B, NULL);     // ±16g, FULL_RES mode, interrupt active high
+    ssi0_write(INT_ENABLE, NULL);
+    ssi0_write(0, NULL);     // Disable interrupts
+    ssi0_write(INT_MAP, NULL);
+    ssi0_write(0x80, NULL);     // Route DATA_READY interrupt to INT2
+    ssi0_write(INT_ENABLE, NULL);
+    ssi0_write(0x80, NULL);     // Enable DATA_READY interrupt
+    ssi0_write(POWER_CTL, NULL);
+    ssi0_write(0x08, NULL);     // Start measurement
 }
-void update_acc_x0(INT8U ssi3_data)
+void update_acc_x0(INT8U ssi0_data)
 {
-    acc_x_data = ssi3_data;
+    acc_x_data = ssi0_data;
 }
-void update_acc_x1(INT8U ssi3_data)
+void update_acc_x1(INT8U ssi0_data)
 {
-    acc_x_data |= (ssi3_data<<8);
+    acc_x_data |= (ssi0_data<<8);
 }
-void update_acc_y0(INT8U ssi3_data)
+void update_acc_y0(INT8U ssi0_data)
 {
-    acc_y_data = ssi3_data;
+    acc_y_data = ssi0_data;
 }
-void update_acc_y1(INT8U ssi3_data)
+void update_acc_y1(INT8U ssi0_data)
 {
-    acc_y_data |= (ssi3_data<<8);
+    acc_y_data |= (ssi0_data<<8);
 }
-void update_acc_z0(INT8U ssi3_data)
+void update_acc_z0(INT8U ssi0_data)
 {
-    acc_z_data = ssi3_data;
+    acc_z_data = ssi0_data;
 }
-void update_acc_z1(INT8U ssi3_data)
+void update_acc_z1(INT8U ssi0_data)
 {
-    acc_z_data |= (ssi3_data<<8);
-    file_write(F_UART, ACC_X_RESP);
-    file_write(F_UART, LOW(acc_x_data));
-    file_write(F_UART, HIGH(acc_x_data));
-    file_write(F_UART, ACC_Y_RESP);
-    file_write(F_UART, LOW(acc_y_data));
-    file_write(F_UART, HIGH(acc_y_data));
-    file_write(F_UART, ACC_Z_RESP);
-    file_write(F_UART, LOW(acc_z_data));
-    file_write(F_UART, HIGH(acc_z_data));
+    acc_z_data |= (ssi0_data<<8);
 }
 
 void accelerometer_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 {
-    static INT8U interval;
     switch(my_state)
     {
         case 0:
-            wait(millis(1000));  // Wait for accelerometer power on
+            wait(millis(2));  // Wait for accelerometer power on
             set_state(1);
             break;
         case 1:
             init_accelerometer();
-            interval = create_interval(millis(10));
             set_state(2);
+
+       //     static INT8U interval;
+       //     interval = create_interval(millis(2000));
             break;
         case 2:
-             if (check_interval(interval))
-             {
-                 ssi1_write(DATAX0|READ_REG, NULL);
-                 ssi1_write(DUMMY, update_acc_x0);
-                 ssi1_write(DATAX1|READ_REG, NULL);
-                 ssi1_write(DUMMY, update_acc_x1);
-                 ssi1_write(DATAY0|READ_REG, NULL);
-                 ssi1_write(DUMMY, update_acc_y0);
-                 ssi1_write(DATAY1|READ_REG, NULL);
-                 ssi1_write(DUMMY, update_acc_y1);
-                 ssi1_write(DATAZ0|READ_REG, NULL);
-                 ssi1_write(DUMMY, update_acc_z0);
-                 ssi1_write(DATAZ1|READ_REG, NULL);
-                 ssi1_write(DUMMY, update_acc_z1);
-             }
-             break;
-    }
-/*            if (acc_data_ready)
+       //     if (check_interval(interval))
+
+            if (acc_data_ready)
             {
 
+                ssi0_write(DATAX0|READ_REG, NULL);
+                ssi0_write(DUMMY, update_acc_x0);
+                ssi0_write(DATAX1|READ_REG, NULL);
+                ssi0_write(DUMMY, update_acc_x1);
+                ssi0_write(DATAY0|READ_REG, NULL);
+                ssi0_write(DUMMY, update_acc_y0);
+                ssi0_write(DATAY1|READ_REG, NULL);
+                ssi0_write(DUMMY, update_acc_y1);
+                ssi0_write(DATAZ0|READ_REG, NULL);
+                ssi0_write(DUMMY, update_acc_z0);
+                ssi0_write(DATAZ1|READ_REG, NULL);
+                ssi0_write(DUMMY, update_acc_z1);
                 acc_data_ready = FALSE;
-                GPIO_PORTD_IM_R|=(1<<7);  // activate PD7 interrupt
+                GPIO_PORTA_IM_R|=(1<<6);  // activate PA6 interrupt
             }
-            break;*/
+            break;
+    }
+
 }
 
 void acc_int_handler()
 {
-    GPIO_PORTD_IM_R&=~(1<<7);  // deactivate PD7 interrupt
+    GPIO_PORTA_IM_R&=~(1<<6);  // deactivate PA6 interrupt
     acc_data_ready = TRUE;
 }

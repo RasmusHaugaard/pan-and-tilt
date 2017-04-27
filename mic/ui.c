@@ -24,7 +24,7 @@
 #include "emp_type.h"
 #include "glob_def.h"
 #include "rtcs.h"
-#include "spi.h"
+#include "ssi2.h"
 #include "file.h"
 #include "interval.h"
 #include "ui.h"
@@ -104,7 +104,7 @@ void handle_byte(INT8U ch)
                     encoder_on = FALSE;
                     break;
                 case ACC_TEST_ON:
-                    acc_test_on = FALSE;
+                    acc_test_on = TRUE;
                     break;
                 case ACC_TEST_OFF:
                     acc_test_on = FALSE;
@@ -115,13 +115,13 @@ void handle_byte(INT8U ch)
             }
             break;
         case PWM_PAN:
-            spi_write(FPGA_PWM_pan_reg, NULL);
-            spi_write(ch, NULL);
+            ssi2_write(FPGA_PWM_pan_reg, NULL);
+            ssi2_write(ch, NULL);
             state = FIRST_BYTE;
             break;
         case PWM_TILT:
-            spi_write(FPGA_PWM_tilt_reg, NULL);
-            spi_write(ch, NULL);
+            ssi2_write(FPGA_PWM_tilt_reg, NULL);
+            ssi2_write(ch, NULL);
             state = FIRST_BYTE;
             break;
         case TARGET_PAN:
