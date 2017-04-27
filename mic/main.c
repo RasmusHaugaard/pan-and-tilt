@@ -51,8 +51,11 @@ int main(void)
 {
   set_80MHz();
   init_gpio();
-  uart0_init( 115200, 8, 1, 'n' );
   init_ssi1();
+  uart0_init( 115200, 8, 1, 'n' );
+
+
+
   init_rtcs();
 
   //Queue initialization
@@ -76,11 +79,11 @@ int main(void)
 //  create_task( spi_rx_task, "SPI RX" );
   create_task( ssi1_tx_task, "SSI1 TX" );
   create_task( ssi1_rx_task, "SSI1 RX" );
-  create_task( encoder_task, "ENCODER" );
+//  create_task( encoder_task, "ENCODER" );
   create_task( ui_input_task, "UI INPUT" );
   create_task( ui_output_task, "UI OUTPUT" );
   create_task( accelerometer_task, "ACCELEROMETER" );
-  create_task( controller_task, "CONTROLLER" );
+//  create_task( controller_task, "CONTROLLER" );
 
   schedule();
 }

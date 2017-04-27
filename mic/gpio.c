@@ -38,7 +38,7 @@ void init_gpio(void)
 ******************************************************************************/
 {
     SYSCTL_RCGC2_R = SYSCTL_RCGC2_GPIOA | SYSCTL_RCGC2_GPIOB | SYSCTL_RCGC2_GPIOC | SYSCTL_RCGC2_GPIOD | SYSCTL_RCGC2_GPIOF;
-    SYSCTL_RCGC1_R |= 0x00000001;
+//    SYSCTL_RCGC1_R |= 0x00000001;
 
     GPIO_PORTC_DIR_R = 0xF0;
     GPIO_PORTC_DEN_R = 0xF0;

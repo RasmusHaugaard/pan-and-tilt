@@ -62,12 +62,15 @@ volatile BOOLEAN acc_data_ready;
 void init_accelerometer()
 {
     // Default output data rate: 100 Hz
-    ssi1_write(DATA_FORMAT, NULL);
-    ssi1_write(0x08, NULL);     // 2g, 13-bit mode
+    ssi1_write(POWER_CTL, NULL);
+    ssi1_write(0, NULL);        // Wakeup
     ssi1_write(POWER_CTL, NULL);
     ssi1_write(0x08, NULL);     // Start measurement
-    ssi1_write(INT_ENABLE, NULL);
-    ssi1_write(0x80, NULL);     // Enable DATA_READY interrupt
+    ssi1_write(DATA_FORMAT, NULL);
+    ssi1_write(0x0B, NULL);     // ±16g, FULL_RES mode
+
+//    ssi1_write(INT_ENABLE, NULL);
+//    ssi1_write(0x80, NULL);     // Enable DATA_READY interrupt
 }
 void update_acc_x0(INT8U ssi3_data)
 {
