@@ -44,6 +44,8 @@
 #define ACC_X_RESP      0x30
 #define ACC_Y_RESP      0x31
 #define ACC_Z_RESP      0x32
+#define ACC_PITCH_RESP  0x33
+#define ACC_ROLL_RESP   0x34
 #define ENC_PAN_RESP    0x20
 #define ENC_TILT_RESP   0x21
 #define PWM_PAN_RESP    0x22
@@ -189,7 +191,7 @@ void ui_output_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
                      file_write(F_UART, PWM_TILT_RESP);
                      file_write(F_UART, tilt_pwm);
                  }
-                 if(acc_test_on)
+                 if(acc_test_on&&FALSE)
                  {
                      file_write(F_UART, ACC_X_RESP);
                      file_write(F_UART, LOW(acc_x_data));

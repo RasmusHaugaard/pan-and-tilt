@@ -49,13 +49,11 @@ SEM SEM_STATE_UPDATED;
 int main(void)
 {
   set_80MHz();
-  disable_global_int();
   init_gpio();
   uart0_init( 115200, 8, 1, 'n' );
   init_ssi0();
   init_ssi2();
   init_rtcs();
-  enable_global_int();
 
   //Queue initialization
   Q_UART_TX = create_queue();

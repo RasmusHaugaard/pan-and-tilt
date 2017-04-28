@@ -51,13 +51,13 @@ void init_ssi0(void){
     GPIO_PORTA_DEN_R|=(1<<2)|(1<<3)|(1<<4)|(1<<5)|(1<<6);//enabling digital mode for PORTA 2,3,4,5
     GPIO_PORTA_PUR_R|=(1<<2)|(1<<3)|(1<<4)|(1<<5)|(1<<6);//selecting pull ups for 2,3,4,5
 
-    GPIO_PORTA_IM_R&=~(1<<6);  // deactivate PA6 interrupt
+ /*   GPIO_PORTA_IM_R&=~(1<<6);  // deactivate PA6 interrupt
     GPIO_PORTA_IS_R|=(1<<6);  // selecting level interrupt for PA6
     GPIO_PORTA_IEV_R|=(1<<6); // low level interrupt
     GPIO_PORTA_IBE_R &= ~(1<<6);
     GPIO_PORTA_ICR_R|=(1<<6);
     GPIO_PORTA_IM_R|=(1<<6);  // activate PA6 interrupt
-    NVIC_EN0_R|=(1<<INT_GPIOA);    // activate GPIOA interrupt
+    NVIC_EN0_R|=(1<<INT_GPIOA);    // activate GPIOA interrupt*/
 
     SSI0_CR1_R=0;          //disabling SSI1 module for settings
     SSI0_CC_R=SSI_CC_CS_PIOSC; //using PIOSC clock (16 MHz)
@@ -126,7 +126,7 @@ void ssi0_rx_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 
         fptr cb1 = get_ptr_queue2();
         if (cb1)
-            cb1((INT8U)(ssi0_data>>8));
+            cb1((INT8S)(ssi0_data>>8));
         fptr cb2 = get_ptr_queue2();
         if (cb2)
             cb2((INT8U)(ssi0_data));
