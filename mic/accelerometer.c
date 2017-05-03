@@ -157,11 +157,11 @@ void calc_roll()
     acc_roll = atan2(acc_y_filtered*0.00390625,sqrt(acc_x_filtered*0.00390625*acc_x_filtered*0.00390625+acc_z_filtered*0.00390625*acc_z_filtered*0.00390625));
 }
 
-FP32 get_pitch()
+FP32 get_acc_pitch()
 {
     return acc_pitch;
 }
-FP32 get_roll()
+FP32 get_acc_roll()
 {
     return acc_roll;
 }

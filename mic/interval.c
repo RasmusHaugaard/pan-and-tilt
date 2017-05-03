@@ -6,9 +6,8 @@ interval poi[MAX_INTERVALS];
 INT8U create_interval(INT16U tpi){
     static INT8U next_id = 0;
     INT8U id = next_id++;
-    poi[id].last_ticks = now_ticks();
-    poi[id].overflowed = FALSE;
     poi[id].tpi = tpi;
+    reset_interval(id);
     return id;
 }
 
@@ -22,4 +21,10 @@ BOOLEAN check_interval(INT8U id){
         result = TRUE;
     }
     return result;
+}
+
+void reset_interval(INT8U id)
+{
+    poi[id].last_ticks = now_ticks();
+    poi[id].overflowed = FALSE;
 }

@@ -34,6 +34,7 @@
 #include "accelerometer.h"
 #include "controller.h"
 #include "ssi0.h"
+#include "homing.h"
 #include "ui.h"
 
 /*****************************    Defines    *******************************/
@@ -81,6 +82,7 @@ int main(void)
   create_task( ui_output_task, "UI OUTPUT" );
   create_task( accelerometer_task, "ACCELEROMETER" );
   create_task( controller_task, "CONTROLLER" );
+  create_task( homing_task, "HOMING" );
 
   schedule();
 }
