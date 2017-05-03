@@ -5,7 +5,7 @@
 #include "encoder.h"
 #include "interval.h"
 #include "pan_tilt_config.h"
-#include "spi.h"
+#include "ssi2.h"
 #include "rtcs.h"
 #include "file.h"
 
@@ -102,13 +102,13 @@ void homing_task(INT8U my_id, INT8U state, INT8U event, INT8U data)
         {
             if (!pan_homed)
             {
-                spi_write(FPGA_REG_HOMING_PAN, NULL);
-                spi_write(DUMMY, handle_pan_index);
+                ssi2_write(FPGA_REG_HOMING_PAN, NULL);
+                ssi2_write(DUMMY, handle_pan_index);
             }
             if (!tilt_homed)
             {
-                spi_write(FPGA_REG_HOMING_TILT, NULL);
-                spi_write(DUMMY, handle_tilt_index);
+                ssi2_write(FPGA_REG_HOMING_TILT, NULL);
+                ssi2_write(DUMMY, handle_tilt_index);
             }
             if (tilt_homed && pan_homed)
             {

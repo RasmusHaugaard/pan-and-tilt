@@ -6,6 +6,9 @@ void controller_task(INT8U, INT8U, INT8U, INT8U);
 void enable_controller();
 void disable_controller();
 
+void enable_accelerometer();
+void disable_accelerometer();
+
 void set_pan_setpoint(INT16S setpoint);
 void set_tilt_setpoint(INT16S setpoint);
 

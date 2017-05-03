@@ -22,6 +22,12 @@
 #define TILT_SETPOINT_RESP 0x25
 #define HOMING_COMPLETE_RESP 0x26
 
+#define ACC_X_RESP      0x30
+#define ACC_Y_RESP      0x31
+#define ACC_Z_RESP      0x32
+#define ACC_PITCH_RESP  0x33
+#define ACC_ROLL_RESP   0x34
+
 #define PING_REQ        0xF0
 #define PING_RESP       0xF1
 
@@ -37,6 +43,7 @@
 #define DUMMY 0
 
 FP32 ticks_to_rad(INT16S);
+INT16S rad_to_ticks(FP32 rad);
 INT8S voltage_to_dutycycle(FP32);
 
 #endif
