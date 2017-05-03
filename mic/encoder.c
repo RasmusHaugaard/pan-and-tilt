@@ -1,22 +1,3 @@
-/*****************************************************************************
-* University of Southern Denmark
-* Embedded Programming (EMP)
-*
-* MODULENAME.: encoder.h
-*
-* PROJECT....: Pan-and-tilt
-*
-* DESCRIPTION: FPGA interface.
-*
-* Change Log:
-******************************************************************************
-* Date    Id    Change
-* YYMMDD
-* --------------------
-* 170331  MBJ    Module created.
-*
-*****************************************************************************/
-
 /***************************** Include files *******************************/
 #include <stdint.h>
 #include <stdlib.h>
@@ -27,18 +8,34 @@
 #include "ssi2.h"
 #include "rtcs.h"
 #include "interval.h"
+#include "pan_tilt_config.h"
 
 /*****************************    Defines    *******************************/
-#define READ_REG                (1<<7)
-#define FPGA_encoder_pan_reg    (0x03 | READ_REG)
-#define FPGA_encoder_tilt_reg   (0x04 | READ_REG)
-#define DUMMY 0
-/*****************************   Constants   *******************************/
+
 /*****************************   Variables   *******************************/
-INT16S encoder_pan_data = 0;
-INT16S encoder_tilt_data = 0;
+INT16S pan_process_variable = 0;
+INT16S tilt_process_variable = 0;
 
 /*****************************   Functions   *******************************/
+INT16S get_pan_process_variable()
+{
+    return pan_process_variable;
+}
+
+INT16S get_tilt_process_variable()
+{
+    return tilt_process_variable;
+}
+
+void reset_pan_process_variable()
+{
+    pan_process_variable = 0;
+}
+
+void reset_tilt_process_variable()
+{
+    tilt_process_variable = 0;
+}
 
 void update_pan_encoder(INT8U spi_data){
     static INT8S last_data;
@@ -49,7 +46,7 @@ void update_pan_encoder(INT8U spi_data){
         initialized = TRUE;
     }
     INT8S delta = new_data - last_data;
-    encoder_pan_data += delta;
+    pan_process_variable += delta;
     last_data = new_data;
 }
 
@@ -62,7 +59,7 @@ void update_tilt_encoder(INT8U spi_data){
         initialized = TRUE;
     }
     INT8S delta = new_data - last_data;
-    encoder_tilt_data += delta;
+    tilt_process_variable += delta;
     last_data = new_data;
 }
 

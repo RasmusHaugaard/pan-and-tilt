@@ -64,9 +64,6 @@ void init_ssi0(void){
     SSI0_CPSR_R=16;        //selecting divisor 16 for SSI clock
     SSI0_CR0_R=0xCF;        //freescale mode, 16 bit data, CPOL=1, CPHA=1
     SSI0_CR1_R|=(1<<1);    //enabling SSI0
-
-
-
 }
 
 fptr buf_ssi0[2 * (QUEUE_SIZE + 8)];

@@ -15,5 +15,6 @@ typedef struct {
 
 INT8U create_interval(INT16U tpi); // use millis() or micros() to get tickcount
 BOOLEAN check_interval(INT8U);
+void reset_interval(INT8U);
 
 #endif
