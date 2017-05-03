@@ -19,6 +19,7 @@ REGION_ALIAS("REGION_STACK", SRAM);
 REGION_ALIAS("REGION_HEAP", SRAM);
 REGION_ALIAS("REGION_ARM_EXIDX", FLASH);
 REGION_ALIAS("REGION_ARM_EXTAB", FLASH);
+ENTRY(ResetISR);
 
 SECTIONS {
 
@@ -93,6 +94,7 @@ SECTIONS {
         end = __heap_start__;
         _end = end;
         __end = end;
+        . = . + HEAPSIZE;
         KEEP(*(.heap))
         __heap_end__ = .;
         __HeapLimit = __heap_end__;
@@ -101,6 +103,8 @@ SECTIONS {
     .stack : ALIGN(0x8) {
         _stack = .;
         __stack = .;
+        . = . + STACKSIZE;
+        __StackTop = . ;
         KEEP(*(.stack))
     } > REGION_STACK
 }
