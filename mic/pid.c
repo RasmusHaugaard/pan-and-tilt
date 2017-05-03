@@ -58,7 +58,7 @@ INT8U create_pid(FP32 Kp, FP32 Ki, FP32 Kd, FP32 delta_t)
 }
 
 
-INT8S pid_next(INT8U id, FP32 process_variable, FP32 set_point)
+FP32 pid_next(INT8U id, FP32 process_variable, FP32 set_point)
 {
     if (id >= MAX_PIDS)
         return 0;
@@ -79,7 +79,7 @@ INT8S pid_next(INT8U id, FP32 process_variable, FP32 set_point)
     output += pids[id].Kd * filtered_delta_error / pids[id].delta_t;
 
     pids[id].prev_error = error;
-    return (INT8S) output;
+    return output;
 }
 
 /****************************** End Of Module *******************************/
