@@ -36,6 +36,10 @@ void update_acc_z0(INT8U ssi0_data);
 void update_acc_z1(INT8U ssi0_data);
 void accelerometer_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data);
 FP32 filter(FP32 acc_data, FP32 *acc_data_prev);
+void calc_pitch();
+void calc_roll();
+FP32 get_pitch();
+FP32 get_roll();
 /*****************************************************************************
 *   Input    : -
 *   Output   : -
