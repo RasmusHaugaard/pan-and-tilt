@@ -37,7 +37,7 @@ void init_gpio(void)
 *   Function : The super loop.
 ******************************************************************************/
 {
-    SYSCTL_RCGC2_R = SYSCTL_RCGC2_GPIOA | SYSCTL_RCGC2_GPIOB | SYSCTL_RCGC2_GPIOC | SYSCTL_RCGC2_GPIOD | SYSCTL_RCGC2_GPIOF;
+    SYSCTL_RCGC2_R = SYSCTL_RCGC2_GPIOA | SYSCTL_RCGC2_GPIOB | SYSCTL_RCGC2_GPIOC | SYSCTL_RCGC2_GPIOD | SYSCTL_RCGC2_GPIOE | SYSCTL_RCGC2_GPIOF;
     SYSCTL_RCGC1_R |= 0x00000001;
     // Enable the GPIO pin for the LED (PF3).  Set the direction as output, and
     // enable the GPIO pin for digital function.
@@ -49,6 +49,13 @@ void init_gpio(void)
 
     GPIO_PORTF_DIR_R = 0x0E;
     GPIO_PORTF_DEN_R = 0x1F;
+
+    GPIO_PORTE_DIR_R = (1<<1);
+    GPIO_PORTE_DEN_R = (1<<1);
+
+    for (INT8U i; i < 10; i++);
+
+    GPIO_PORTE_DATA_R |= (1<<1);
 }
 
 /****************************** End Of Module *******************************/
