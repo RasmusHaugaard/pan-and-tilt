@@ -4,38 +4,18 @@
 #include "emp_type.h"
 #include "glob_def.h"
 #include "rtcs.h"
-#include "spi.h"
+#include "ssi2.h"
 #include "file.h"
 #include "interval.h"
 #include "ui.h"
 #include "controller.h"
 #include "encoder.h"
-
+#include "homing.h"
+#include "pan_tilt_config.h"
+#include "accelerometer.h"
 /*****************************    Defines    *******************************/
 #define HIGH(x)  ((x) >> 8)
 #define LOW(x)  ((x) & 0xFF)
-
-#define SET_PWM_PAN     0x10
-#define SET_PWM_TILT    0x11
-#define SET_TARGET_PAN  0x12
-#define SET_TARGET_TILT 0x13
-
-#define DATA_LOG_ON     0x01
-#define DATA_LOG_OFF    0x02
-#define ACCELEROMETER_ON 0x03
-
-#define ENC_PAN_RESP    0x20
-#define ENC_TILT_RESP   0x21
-#define PWM_PAN_RESP    0x22
-#define PWM_TILT_RESP   0x23
-#define PAN_SETPOINT_RESP 0x24
-#define TILT_SETPOINT_RESP 0x25
-
-#define PING_REQ        0xF0
-#define PING_RESP       0xF1
-
-#define FPGA_PWM_pan_reg        0x01
-#define FPGA_PWM_tilt_reg       0x02
 
 enum ui_states
 {
@@ -49,9 +29,19 @@ enum ui_states
 extern FILE F_UART;
 /*****************************   Variables   *******************************/
 INT8U ch;
+BOOLEAN encoder_on = FALSE;
+extern INT16S encoder_pan_data;
+extern INT16S encoder_tilt_data;
+extern INT16S acc_x_data;
+extern INT16S acc_y_data;
+extern INT16S acc_z_data;
+extern INT16S pan_target;
+extern INT16S tilt_target;
+extern INT8S pan_pwm;
+extern INT8S tilt_pwm;
+
 BOOLEAN data_logging_on = 0;
 enum ui_states state = FIRST_BYTE;
-
 /*****************************   Functions   *******************************/
 void handle_byte(INT8U ch)
 {
@@ -60,6 +50,9 @@ void handle_byte(INT8U ch)
         case FIRST_BYTE:
             switch (ch)
             {
+                case START_HOMING:
+                    home();
+                    break;
                 case SET_PWM_PAN:
                     state = PWM_PAN;
                     break;
@@ -73,9 +66,8 @@ void handle_byte(INT8U ch)
                     state = TARGET_TILT;
                     break;
                 case ACCELEROMETER_ON:
-                    //TODO: when accelerometer is implemented
-                    //enable_accelerometer();
-                    //enable_controller();
+                    enable_accelerometer();
+                    enable_controller();
                     break;
                 case DATA_LOG_ON:
                     data_logging_on = TRUE;
@@ -107,7 +99,7 @@ void handle_byte(INT8U ch)
                 i++;
             }else{
                 i = 0;
-                //disable_accelerometer(); //TODO: when accelerometer is implemented
+                disable_accelerometer();
                 set_pan_setpoint((ch << 8) | low_byte);
                 enable_controller();
                 state = FIRST_BYTE;
@@ -123,7 +115,7 @@ void handle_byte(INT8U ch)
                 i++;
             }else{
                 i = 0;
-                //disable_accelerometer(); //TODO: when accelerometer is implemented
+                disable_accelerometer();
                 set_tilt_setpoint((ch << 8) | low_byte);
                 enable_controller();
                 state = FIRST_BYTE;
@@ -181,6 +173,33 @@ void log_tilt_process_variable()
     file_write(F_UART, HIGH(get_tilt_process_variable()));
 }
 
+void log_acc_data()
+{
+    file_write(F_UART, ACC_X_RESP);
+    file_write(F_UART, LOW(acc_x_data));
+    file_write(F_UART, HIGH(acc_x_data));
+    file_write(F_UART, ACC_Y_RESP);
+    file_write(F_UART, LOW(acc_y_data));
+    file_write(F_UART, HIGH(acc_y_data));
+    file_write(F_UART, ACC_Z_RESP);
+    file_write(F_UART, LOW(acc_z_data));
+    file_write(F_UART, HIGH(acc_z_data));
+}
+
+void log_acc_pitch()
+{
+    file_write(F_UART, ACC_PITCH_RESP);
+    file_write(F_UART, LOW((INT16S)get_acc_pitch()));
+    file_write(F_UART, HIGH((INT16S)get_acc_pitch()));
+}
+
+void log_acc_roll()
+{
+    file_write(F_UART, ACC_ROLL_RESP);
+    file_write(F_UART, LOW((INT16S)get_acc_roll()));
+    file_write(F_UART, HIGH((INT16S)get_acc_roll()));
+}
+
 void ui_output_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
 {
     static INT8U interval;
@@ -200,6 +219,9 @@ void ui_output_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
                  log_tilt_control_variable();
                  log_pan_process_variable();
                  log_tilt_process_variable();
+                 log_acc_data();
+                 log_acc_pitch();
+                 log_acc_roll();
              }
              break;
     }

@@ -11,7 +11,10 @@ FP32 ticks_to_rad(INT16S ticks)
 {
     return ticks * RAD_PR_TICK;
 }
-
+INT16S rad_to_ticks(FP32 rad)
+{
+    return rad / RAD_PR_TICK;
+}
 INT8S voltage_to_dutycycle(FP32 voltage)
 {
     FP32 temp = voltage / MAX_VOLTAGE;
