@@ -24,6 +24,7 @@
 /*****************************    Defines    *******************************/
 #define MAX_PIDS     2
 #define AVG_FILTER_SIZE 10
+#define MAX_VOLTAGE 12
 
 typedef struct{
     FP32 Kp;
@@ -64,7 +65,10 @@ INT8S pid_next(INT8U id, FP32 process_variable, FP32 set_point)
         return 0;
 
     FP32 error = set_point - process_variable;
-    pids[id].sum_error += error * pids[id].delta_t;
+    if((pids[id].sum_error*pids[id].Ki < MAX_VOLTAGE && pids[id].sum_error*pids[id].Ki > -MAX_VOLTAGE) ||
+            (pids[id].sum_error < 0 && error > 0) ||
+            (pids[id].sum_error > 0 && error < 0))
+        pids[id].sum_error += error * pids[id].delta_t;
 
     pids[id].delta_error_values[pids[id].filter_index] = error - pids[id].prev_error;
     pids[id].filter_index %= AVG_FILTER_SIZE;
