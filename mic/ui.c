@@ -16,7 +16,7 @@
 /*****************************    Defines    *******************************/
 #define HIGH(x)  ((x) >> 8)
 #define LOW(x)  ((x) & 0xFF)
-
+#define PI 3.1415926535
 enum ui_states
 {
   FIRST_BYTE,
@@ -188,16 +188,36 @@ void log_acc_data()
 
 void log_acc_pitch()
 {
+    union
+    {
+        FP32 f;
+        INT8U bytes[4];
+    } p;
+
+    p.f = get_acc_pitch();
+
     file_write(F_UART, ACC_PITCH_RESP);
-    file_write(F_UART, LOW((INT16S)get_acc_pitch()));
-    file_write(F_UART, HIGH((INT16S)get_acc_pitch()));
+    file_write(F_UART, p.bytes[0]);
+    file_write(F_UART, p.bytes[1]);
+    file_write(F_UART, p.bytes[2]);
+    file_write(F_UART, p.bytes[3]);
 }
 
 void log_acc_roll()
 {
+    union
+    {
+        FP32 f;
+        INT8U bytes[4];
+    } p;
+
+    p.f = get_acc_roll();
+
     file_write(F_UART, ACC_ROLL_RESP);
-    file_write(F_UART, LOW((INT16S)get_acc_roll()));
-    file_write(F_UART, HIGH((INT16S)get_acc_roll()));
+    file_write(F_UART, p.bytes[0]);
+    file_write(F_UART, p.bytes[1]);
+    file_write(F_UART, p.bytes[2]);
+    file_write(F_UART, p.bytes[3]);
 }
 
 void ui_output_task(INT8U my_id, INT8U my_state, INT8U event, INT8U data)
