@@ -12,16 +12,16 @@ entity hb_pwm is
 end hb_pwm;
 
 architecture Behavioral of hb_pwm is
-signal direction : std_logic := 0;
-signal prescale_cnt : unsigned(5 downto 0) := 0;
-signal counter : unsigned(6 downto 0) := 0;
-signal compare : unsigned(6 downto 0) := 0;
+signal direction : std_logic := '0';
+signal prescale_cnt : unsigned(5 downto 0) := to_unsigned(0, 6);
+signal counter : unsigned(6 downto 0) := to_unsigned(0, 7);
+signal compare : unsigned(6 downto 0) := to_unsigned(0, 7);
 
 --prescaleren skal scale 50 MHz til ca. 20 kHz pwm.
 --counteren tæller 127 gange pr. pwm cycle 0->126
 --50.000.000 / (20.000 * 127) = 19.7 ~ 20
 --faktisk pwm frekvens: 50.000.000 / 20 / 127 = 19685 Hz
-constant PRE_CNT_SIZE : unsigned(5 downto 0) := 20;
+constant PRE_CNT_SIZE : unsigned(5 downto 0) := to_unsigned(20, 6);
 
 begin
 	
@@ -39,7 +39,7 @@ begin
 				direction <= dutycycle_signed(7);
 				if dutycycle_signed(7) = '1' then
 					if unsigned(dutycycle_signed(6 downto 0)) = 0 then
-						compare <= 0; --: -128 og -127 er begge -100% pwm
+						compare <= to_unsigned(0,7); --: -128 og -127 er begge -100% pwm
 					else
 						compare <= unsigned(dutycycle_signed(6 downto 0)) - 1;
 					end if;
