@@ -105,13 +105,13 @@ void controller_task(INT8U id, INT8U state, INT8U event, INT8U data)
         set_state(1);
         break;
     case 1:
-        if (accelerometer_enable)
-        {
-            set_pan_setpoint(rad_to_ticks(get_acc_roll()));
-            set_tilt_setpoint(rad_to_ticks(get_acc_pitch()));
-        }
         if (check_interval(interval) && controller_enable)
         {
+            if (accelerometer_enable)
+            {
+                set_pan_setpoint(rad_to_ticks(get_acc_roll()));
+                set_tilt_setpoint(rad_to_ticks(get_acc_pitch()));
+            }
 
             set_pan_control_variable(
                 voltage_to_dutycycle(
