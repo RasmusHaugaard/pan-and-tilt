@@ -42,7 +42,9 @@
 #define DUMMY       0
 /*****************************   Constants   *******************************/
 FP32 alpha = 0.1;
+#define PI 3.1415926535
 /*****************************   Variables   *******************************/
+INT16S acc_rev = 0;
 INT16S acc_x_data = 0;
 INT16S acc_y_data = 0;
 INT16S acc_z_data = 0;
@@ -55,6 +57,7 @@ FP32 acc_z_filtered = 0;
 FP32 acc_pitch = 0;
 FP32 acc_roll = 0;
 FP32 acc_x_filtered_prev = 0;
+FP32 acc_x_filtered_prev_2 = 0;
 FP32 acc_y_filtered_prev = 0;
 FP32 acc_z_filtered_prev = 0;
 
@@ -83,6 +86,7 @@ void update_acc_x0(INT8U ssi0_data)
 void update_acc_x1(INT8U ssi0_data)
 {
     acc_x_data = (ssi0_data<<8)|acc_x_temp;
+    acc_x_filtered_prev_2 = acc_x_filtered;
     acc_x_filtered = filter(acc_x_data, &acc_x_filtered_prev);
 }
 void update_acc_y0(INT8U ssi0_data)
@@ -149,7 +153,30 @@ FP32 filter(FP32 acc_data, FP32 *acc_data_prev)
 
 void calc_pitch()
 {
-    acc_pitch = atan2(acc_x_filtered*0.00390625,sqrt(acc_y_filtered*0.00390625*acc_y_filtered*0.00390625+acc_z_filtered*0.00390625*acc_z_filtered*0.00390625));
+    if(acc_z_filtered<0)
+    {
+        if(acc_x_filtered>0)
+        {
+            if(acc_x_filtered_prev_2 <= 0)
+            {
+                acc_rev--;
+            }
+            acc_pitch = 2*PI*acc_rev-0.5*PI+PI-atan2(acc_x_filtered*0.00390625,sqrt(acc_y_filtered*0.00390625*acc_y_filtered*0.00390625+acc_z_filtered*0.00390625*acc_z_filtered*0.00390625));
+        }
+        else
+        {
+            if(acc_x_filtered_prev_2 > 0)
+            {
+                acc_rev++;
+            }
+            acc_pitch =2*PI*acc_rev-0.5*PI-PI-atan2(acc_x_filtered*0.00390625,sqrt(acc_y_filtered*0.00390625*acc_y_filtered*0.00390625+acc_z_filtered*0.00390625*acc_z_filtered*0.00390625));
+
+        }
+    }
+    else
+    {
+        acc_pitch = 2*PI*acc_rev-0.5*PI+atan2(acc_x_filtered*0.00390625,sqrt(acc_y_filtered*0.00390625*acc_y_filtered*0.00390625+acc_z_filtered*0.00390625*acc_z_filtered*0.00390625));
+    }
 }
 
 void calc_roll()

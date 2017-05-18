@@ -98,8 +98,8 @@ void controller_task(INT8U id, INT8U state, INT8U event, INT8U data)
     {
     case 0:
         interval = create_interval(millis(10));
-        pid_tilt = create_pid(40, 0, 0, 0.01);
-        pid_pan = create_pid(40, 0, 0, 0.01);
+        pid_tilt = create_pid(27.93, 1.3715, 7.98, 0.01);
+        pid_pan = create_pid(35.1556, 3.7562, 12.2750, 0.01);
         set_pan_control_variable(0);
         set_tilt_control_variable(0);
         set_state(1);
