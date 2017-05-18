@@ -217,11 +217,15 @@ void schedule()
     init_systick();
     while (TRUE)
     {
-        INT16U dticks = ticks;
-        //atomic decrementation
+        //atomic
         disable_global_int();
-        ticks -= dticks;
+        INT16U dticks = ticks;
+        ticks = 0;
         enable_global_int();
+
+        static INT16U max_dticks = 0;
+        if (dticks > max_dticks)
+            max_dticks = dticks;
 
         glob_ticks += dticks;
 
