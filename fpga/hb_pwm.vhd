@@ -17,11 +17,7 @@ signal prescale_cnt : unsigned(5 downto 0) := to_unsigned(0, 6);
 signal counter : unsigned(6 downto 0) := to_unsigned(0, 7);
 signal compare : unsigned(6 downto 0) := to_unsigned(0, 7);
 
---prescaleren skal scale 50 MHz til ca. 20 kHz pwm.
---counteren tæller 127 gange pr. pwm cycle 0->126
---50.000.000 / (20.000 * 127) = 19.7 ~ 20
---faktisk pwm frekvens: 50.000.000 / 20 / 127 = 19685 Hz
-constant PRE_CNT_SIZE : unsigned(5 downto 0) := to_unsigned(20, 6);
+constant PRE_CNT_SIZE : unsigned(5 downto 0) := to_unsigned(19, 6);
 
 begin
 	

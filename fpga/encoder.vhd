@@ -14,18 +14,18 @@ architecture Behavioral of encoder is
 signal A, B, LA, LB : STD_LOGIC;
 signal AS, BS : STD_LOGIC_VECTOR(9 downto 0);
 signal cnt : signed(7 downto 0);
-signal pulse_60KHz : STD_LOGIC;
+signal pulse_26KHz : STD_LOGIC;
 begin
 
-pulse_ent : entity work.prescaler generic map(prescale_val => 833) port map( --50.000.000 / 833 = 60.000
+pulse_ent : entity work.prescaler generic map(prescale_val => 1923) port map( --50.000.000 / 26.000 ~= 1923
 	clk => clk,
-	clk_scaled => pulse_60KHz
+	clk_scaled => pulse_26KHz
 );
 
 process (clk)
 begin
 	if rising_edge(clk) then
-		if pulse_60KHz = '1' then
+		if pulse_26KHz = '1' then
 			AS <= AS(8 downto 0)& Ain;
 			BS <= BS(8 downto 0)& Bin;
 			if AS = "1111111111" then
