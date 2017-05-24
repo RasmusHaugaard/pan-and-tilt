@@ -26,6 +26,7 @@ enum states{
     INIT,
     OFF,
     HOMING,
+    WAIT_FOR_SETTLE,
     WAITING_FOR_CONTROLLER,
 };
 
@@ -112,13 +113,17 @@ void homing_task(INT8U my_id, INT8U state, INT8U event, INT8U data)
             }
             if (tilt_homed && pan_homed)
             {
-                set_state(WAITING_FOR_CONTROLLER);
-                set_pan_setpoint(0);
-                set_tilt_setpoint(0);
-                enable_controller();
-                wait(millis(1000));
+                set_state(WAIT_FOR_SETTLE);
+                wait(millis(500));
             }
         }
+        break;
+    case WAIT_FOR_SETTLE:
+        set_state(WAITING_FOR_CONTROLLER);
+        set_pan_setpoint(0);
+        set_tilt_setpoint(0);
+        enable_controller();
+        wait(millis(1000));
         break;
     case WAITING_FOR_CONTROLLER:
         file_write(F_UART, HOMING_COMPLETE_RESP);

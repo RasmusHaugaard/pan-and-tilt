@@ -78,6 +78,9 @@ void handle_byte(INT8U ch)
                 case PING_REQ:
                     file_write(F_UART, PING_RESP);
                     break;
+                case GET_ENCODER:
+                    log_tilt_process_variable();
+                    break;
             }
             break;
         case PWM_PAN:
